@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
 import { Word } from '../types'
 import { FSRSScheduler, FSRSRating } from '../lib/fsrs'
+import { LearnMode } from './modes/LearnMode'
+import { TestMode } from './modes/TestMode'
+import { MatchMode } from './modes/MatchMode'
+import { SpellMode } from './modes/SpellMode'
 import { 
   Volume2, 
   RotateCw, 
@@ -15,7 +19,12 @@ import {
   Lightbulb,
   Clock,
   Settings2,
-  BookOpen
+  BookOpen,
+  GraduationCap,
+  FileCheck,
+  Zap,
+  Headphones,
+  Layers
 } from 'lucide-react'
 
 interface VocabProps {
@@ -37,6 +46,7 @@ export const VocabSection: React.FC<VocabProps> = ({
   const [searchTerm, setSearchTerm] = useState('')
   const [dailyLimit, setDailyLimit] = useState(20)
   const [showSettings, setShowSettings] = useState(false)
+  const [activeStudyMode, setActiveStudyMode] = useState<'flashcard' | 'learn' | 'test' | 'match' | 'spell'>('flashcard')
 
   const categories = ['all', ...Array.from(new Set(words.map(w => w.category).filter(Boolean)))]
 
@@ -87,6 +97,83 @@ export const VocabSection: React.FC<VocabProps> = ({
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
+      {/* 0. QUIZLET STUDY MODES BAR */}
+      <div className="flex items-center justify-between bg-white p-2 rounded-2xl border border-[#e2e8f0] shadow-sm overflow-x-auto gap-1">
+        <button
+          onClick={() => setActiveStudyMode('flashcard')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+            activeStudyMode === 'flashcard'
+              ? 'bg-[#0284c7] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-[#f0f9ff] hover:text-[#0284c7]'
+          }`}
+        >
+          <Layers className="w-4 h-4" /> Flashcard FSRS
+        </button>
+
+        <button
+          onClick={() => setActiveStudyMode('learn')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+            activeStudyMode === 'learn'
+              ? 'bg-[#0284c7] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-[#f0f9ff] hover:text-[#0284c7]'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" /> Learn (Học sâu)
+        </button>
+
+        <button
+          onClick={() => setActiveStudyMode('test')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+            activeStudyMode === 'test'
+              ? 'bg-[#0284c7] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-[#f0f9ff] hover:text-[#0284c7]'
+          }`}
+        >
+          <FileCheck className="w-4 h-4" /> Test (Kiểm tra)
+        </button>
+
+        <button
+          onClick={() => setActiveStudyMode('match')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+            activeStudyMode === 'match'
+              ? 'bg-[#0284c7] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-[#f0f9ff] hover:text-[#0284c7]'
+          }`}
+        >
+          <Zap className="w-4 h-4" /> Match (Ghép từ)
+        </button>
+
+        <button
+          onClick={() => setActiveStudyMode('spell')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+            activeStudyMode === 'spell'
+              ? 'bg-[#0284c7] text-white shadow-sm'
+              : 'text-slate-600 hover:bg-[#f0f9ff] hover:text-[#0284c7]'
+          }`}
+        >
+          <Headphones className="w-4 h-4" /> Spell (Chính tả)
+        </button>
+      </div>
+
+      {/* Render selected Study Mode */}
+      {activeStudyMode === 'learn' && (
+        <LearnMode words={filteredWords} onFinish={() => setActiveStudyMode('flashcard')} />
+      )}
+
+      {activeStudyMode === 'test' && (
+        <TestMode words={filteredWords} onFinish={() => setActiveStudyMode('flashcard')} />
+      )}
+
+      {activeStudyMode === 'match' && (
+        <MatchMode words={filteredWords} onFinish={() => setActiveStudyMode('flashcard')} />
+      )}
+
+      {activeStudyMode === 'spell' && (
+        <SpellMode words={filteredWords} onFinish={() => setActiveStudyMode('flashcard')} />
+      )}
+
+      {activeStudyMode === 'flashcard' && (
+        <>
       {/* 1. TOP BAR: FILTERS, SEARCH & FSRS SETTINGS */}
       <div className="bg-white p-5 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Category pills */}
@@ -400,6 +487,8 @@ export const VocabSection: React.FC<VocabProps> = ({
         <div className="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-500 text-sm">
           Không tìm thấy từ vựng nào khớp với từ khóa tìm kiếm.
         </div>
+      )}
+      </>
       )}
     </div>
   )
