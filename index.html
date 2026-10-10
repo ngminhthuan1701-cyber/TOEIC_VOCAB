@@ -471,6 +471,7 @@ const Store = {
       }
 
       if (profRes.data) {
+        state.meta.username = profRes.data.username || state.meta.username || '';
         state.meta.newPerDay = profRes.data.new_per_day || state.meta.newPerDay || 15;
         state.meta.log = Object.assign({}, profRes.data.log || {}, state.meta.log || {});
         state.meta.newLog = Object.assign({}, profRes.data.new_log || {}, state.meta.newLog || {});
@@ -566,6 +567,7 @@ const Store = {
     try {
       const { error } = await sb.from('profiles').upsert({
         id: currentUser.id,
+        username: getDisplayUsername(currentUser),
         email: currentUser.email,
         new_per_day: state.meta.newPerDay,
         log: state.meta.log,
@@ -589,14 +591,26 @@ const Store = {
   }
 };
 
+function removeVietnameseTones(str) {
+  return String(str || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
+}
+
 function toInternalEmail(username) {
-  const u = String(username || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '');
-  if (!u) return '';
-  return u.includes('@') ? u : `${u}@toeic.local`;
+  const raw = String(username || '').trim();
+  if (!raw) return '';
+  if (raw.includes('@')) return raw;
+  const noTone = removeVietnameseTones(raw).toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+  return `${noTone || 'user'}@toeic.local`;
 }
 
 function getDisplayUsername(user) {
   if (!user) return 'Tài khoản';
+  if (user.user_metadata && user.user_metadata.username) return user.user_metadata.username;
+  if (state.meta && state.meta.username) return state.meta.username;
   const email = user.email || '';
   const cleaned = email.replace(/@toeic\.local$/i, '').replace(/@.*$/, '');
   return cleaned || 'Tài khoản';
@@ -1560,8 +1574,9 @@ if (sib) sib.addEventListener('click', async e => {
 
   // Tự động đăng ký nếu tài khoản mới
   if (error && (error.message.includes('Invalid login credentials') || error.status === 400)) {
-    const signUpRes = await sb.auth.signUp({ email, password });
+    const signUpRes = await sb.auth.signUp({ email, password, options: { data: { username } } });
     if (!signUpRes.error && signUpRes.data && signUpRes.data.user) {
+      state.meta.username = username;
       if (signUpRes.data.session) {
         data = signUpRes.data;
         error = null;
@@ -1584,6 +1599,7 @@ if (sib) sib.addEventListener('click', async e => {
   if (error) {
     toast('Lỗi: ' + (error.message || 'Đăng nhập thất bại'));
   } else if (data && data.user) {
+    state.meta.username = username;
     $('#authDlg').close();
     toast(`Xin chào ${getDisplayUsername(data.user)}!`);
     currentUser = data.user;
@@ -1599,11 +1615,12 @@ if (sub) sub.addEventListener('click', async e => {
   if (!username || password.length < 6) { toast('Vui lòng nhập tên tài khoản và mật khẩu từ 6 ký tự.'); return; }
   const email = toInternalEmail(username);
   const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang tạo…';
-  const { data, error } = await sb.auth.signUp({ email, password });
+  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { username } } });
   btn.disabled = false; btn.textContent = 'Tạo mới';
   if (error) {
     toast('Lỗi: ' + (error.message || 'Tạo tài khoản thất bại'));
   } else {
+    state.meta.username = username;
     toast(`Đã tạo tài khoản "${username}"!`);
     if (data.session) {
       $('#authDlg').close();

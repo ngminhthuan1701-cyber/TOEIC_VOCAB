@@ -6,6 +6,7 @@
 -- 1. BẢNG PROFILES (Lưu thông tin cài đặt & lịch sử học của người dùng)
 create table if not exists public.profiles (
   id uuid references auth.users(id) on delete cascade primary key,
+  username text,                                -- Tên tài khoản hiển thị (ví dụ: Tấn Anh)
   email text,
   new_per_day integer default 15 not null check (new_per_day > 0 and new_per_day <= 200),
   log jsonb default '{}'::jsonb not null,        -- { "2026-10-10": 12 } số lượt ôn mỗi ngày
@@ -13,6 +14,9 @@ create table if not exists public.profiles (
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );
+
+-- Tự động thêm cột username nếu bảng profiles đã tồn tại từ trước
+alter table public.profiles add column if not exists username text;
 
 -- Kích hoạt Row Level Security (RLS) để bảo vệ dữ liệu riêng tư
 alter table public.profiles enable row level security;
