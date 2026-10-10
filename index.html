@@ -50,6 +50,9 @@ p.lead{color:var(--muted);margin:0 0 18px}
 .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn.primary:hover{opacity:.92}
 .btn.small{padding:6px 10px;font-size:14px;border-radius:8px}
+.avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;background:var(--surface-2);border:1px solid var(--line);flex:none;vertical-align:middle}
+.avatar.lg{width:54px;height:54px;border-width:2px}
+.btn.has-avatar{padding:4px 12px 4px 6px;gap:8px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .icon-btn{background:none;border:1px solid transparent;border-radius:8px;padding:6px 8px;cursor:pointer;color:var(--muted);line-height:1}
 .icon-btn:hover{border-color:var(--line);color:var(--ink)}
@@ -296,9 +299,12 @@ dialog::backdrop{background:rgba(10,15,30,.45)}
   <div class="dlg">
     <h3 id="authTitle">Tài khoản Supabase</h3>
     <p class="lead" style="font-size:14px;margin-bottom:14px">Đăng nhập để đồng bộ dữ liệu an toàn trên Supabase Cloud.</p>
-    <div id="authUserInfo" hidden style="margin-bottom:14px;padding:12px;background:var(--surface-2);border-radius:10px">
-      <div style="font-weight:600" id="authUserEmail"></div>
-      <div style="font-size:13px;color:var(--muted);margin-top:2px">Đang đồng bộ dữ liệu riêng tư</div>
+    <div id="authUserInfo" hidden style="margin-bottom:16px;padding:14px;background:var(--surface-2);border-radius:12px;display:flex;align-items:center;gap:12px">
+      <img id="authUserAvatar" class="avatar lg" src="" alt="Avatar">
+      <div style="min-width:0">
+        <div style="font-weight:600;font-size:16px;word-break:break-all" id="authUserEmail"></div>
+        <div style="font-size:13px;color:var(--good);margin-top:2px">● Đang đồng bộ Supabase Cloud</div>
+      </div>
     </div>
     <div id="authForm">
       <label class="field">Email<input id="authEmail" type="email" placeholder="ten@vidu.com" autocomplete="email"></label>
@@ -564,6 +570,12 @@ const Store = {
   }
 };
 
+function getUserAvatar(user) {
+  if (!user) return '';
+  const seed = encodeURIComponent((user.email || user.id || 'toeic').toLowerCase());
+  return `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+}
+
 function setSync(msg) {
   const el = $('#sync');
   const btn = $('#authBtn');
@@ -573,10 +585,18 @@ function setSync(msg) {
   }
   if (!currentUser) {
     el.textContent = 'Lưu trên máy này';
-    if (btn) btn.textContent = 'Đăng nhập';
+    if (btn) {
+      btn.innerHTML = 'Đăng nhập';
+      btn.classList.remove('has-avatar');
+    }
   } else {
     el.textContent = 'Đã kết nối Supabase';
-    if (btn) btn.textContent = currentUser.email ? currentUser.email.split('@')[0] : 'Tài khoản';
+    const name = currentUser.email ? currentUser.email.split('@')[0] : 'Tài khoản';
+    const avatar = getUserAvatar(currentUser);
+    if (btn) {
+      btn.innerHTML = `<img class="avatar" src="${esc(avatar)}" alt="Avatar"> <span>${esc(name)}</span>`;
+      btn.classList.add('has-avatar');
+    }
   }
 }
 
@@ -1476,6 +1496,8 @@ function openAuthDialog() {
     title.textContent = 'Thông tin tài khoản';
     userInfo.hidden = false;
     userEmail.textContent = currentUser.email || 'Đã đăng nhập';
+    const avatarImg = $('#authUserAvatar');
+    if (avatarImg) avatarImg.src = getUserAvatar(currentUser);
     form.hidden = true;
     actions.hidden = false;
   } else {
