@@ -25,10 +25,15 @@ import {
   GraduationCap,
   FileCheck,
   Zap,
-  Headphones,
   Layers,
-  FileText
+  FileText,
+  Mic,
+  MicOff,
+  Download,
+  Headphones,
+  Globe
 } from 'lucide-react'
+import { AnkiCsvUtil } from '../lib/ankiCsv'
 
 interface VocabProps {
   words: Word[]
@@ -53,6 +58,13 @@ export const VocabSection: React.FC<VocabProps> = ({
   const [showSettings, setShowSettings] = useState(false)
   const [showETSModal, setShowETSModal] = useState(false)
   const [activeStudyMode, setActiveStudyMode] = useState<'flashcard' | 'learn' | 'test' | 'match' | 'spell'>('flashcard')
+  
+  // Voice Accent selection (US, UK, AU)
+  const [accent, setAccent] = useState<'en-US' | 'en-GB' | 'en-AU'>('en-US')
+  
+  // Speech Recognition (ELSA style pronunciation test)
+  const [isListening, setIsListening] = useState(false)
+  const [speechFeedback, setSpeechFeedback] = useState<{ isCorrect: boolean; text: string } | null>(null)
 
   const categories = ['all', ...Array.from(new Set(words.map(w => w.category).filter(Boolean)))]
 
@@ -74,10 +86,53 @@ export const VocabSection: React.FC<VocabProps> = ({
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
       const utterance = new SpeechSynthesisUtterance(text)
-      utterance.lang = 'en-US'
+      utterance.lang = accent
       utterance.rate = 0.85
       window.speechSynthesis.speak(utterance)
     }
+  }
+
+  // ELSA Style: Ghi âm giọng người học và so sánh
+  const startSpeechRecognition = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Trình duyệt của bạn không hỗ trợ Web Speech API. Vui lòng dùng Chrome, Edge hoặc Safari!')
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = accent
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    setIsListening(true)
+    setSpeechFeedback(null)
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript.trim().toLowerCase()
+      const target = currentWord.word.toLowerCase()
+      const isCorrect = transcript === target || transcript.includes(target)
+
+      setSpeechFeedback({
+        isCorrect,
+        text: `Bạn đã đọc: "${transcript}"`
+      })
+      setIsListening(false)
+    }
+
+    recognition.onerror = () => {
+      setSpeechFeedback({
+        isCorrect: false,
+        text: 'Chưa thu được giọng nói rõ ràng. Vui lòng thử lại!'
+      })
+      setIsListening(false)
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+    }
+
+    recognition.start()
   }
 
   const handleNext = () => {
@@ -220,6 +275,46 @@ export const VocabSection: React.FC<VocabProps> = ({
             />
           </div>
 
+          {/* Voice Accent Picker (US, UK, AU) */}
+          <div className="flex items-center bg-[#f8fafc] border border-slate-200 rounded-2xl p-1 gap-1 text-[11px] font-bold">
+            <span className="text-slate-400 pl-1.5 flex items-center gap-1">
+              <Globe className="w-3.5 h-3.5" />
+            </span>
+            <button
+              onClick={() => setAccent('en-US')}
+              className={`px-2 py-1 rounded-xl transition-all cursor-pointer ${
+                accent === 'en-US' ? 'bg-[#0284c7] text-white shadow-xs' : 'text-slate-600 hover:text-sky-600'
+              }`}
+            >
+              US
+            </button>
+            <button
+              onClick={() => setAccent('en-GB')}
+              className={`px-2 py-1 rounded-xl transition-all cursor-pointer ${
+                accent === 'en-GB' ? 'bg-[#0284c7] text-white shadow-xs' : 'text-slate-600 hover:text-sky-600'
+              }`}
+            >
+              UK
+            </button>
+            <button
+              onClick={() => setAccent('en-AU')}
+              className={`px-2 py-1 rounded-xl transition-all cursor-pointer ${
+                accent === 'en-AU' ? 'bg-[#0284c7] text-white shadow-xs' : 'text-slate-600 hover:text-sky-600'
+              }`}
+            >
+              AU
+            </button>
+          </div>
+
+          {/* Anki Export Button */}
+          <button
+            onClick={() => AnkiCsvUtil.exportToCsv(filteredWords)}
+            className="p-2.5 rounded-2xl border border-slate-200 bg-[#f8fafc] hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 text-slate-600 transition-colors cursor-pointer"
+            title="Xuất file CSV tương thích Anki"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+
           {/* FSRS Settings Toggle */}
           <button
             onClick={() => setShowSettings(!showSettings)}
@@ -318,6 +413,23 @@ export const VocabSection: React.FC<VocabProps> = ({
                   <span>Xem trong đề</span>
                 </button>
 
+                {/* ELSA Speech Recognition (Microphone) Button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    startSpeechRecognition()
+                  }}
+                  className={`p-2.5 rounded-2xl border transition-colors cursor-pointer ${
+                    isListening
+                      ? 'bg-rose-500 text-white border-rose-600 animate-pulse'
+                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                  }`}
+                  title={isListening ? "Đang lắng nghe bạn đọc..." : "Luyện nói & Chấm phát âm (ELSA style)"}
+                >
+                  {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </button>
+
                 {/* Audio Button */}
                 <button
                   type="button"
@@ -326,7 +438,7 @@ export const VocabSection: React.FC<VocabProps> = ({
                     speak(currentWord.word)
                   }}
                   className="p-2.5 rounded-2xl bg-[#f0f9ff] hover:bg-[#0284c7] hover:text-white transition-colors text-[#0284c7] border border-[#bae6fd] cursor-pointer"
-                  title="Nghe phát âm chuẩn"
+                  title={`Nghe phát âm giọng ${accent.replace('en-', '')}`}
                 >
                   <Volume2 className="w-5 h-5" />
                 </button>
@@ -360,6 +472,18 @@ export const VocabSection: React.FC<VocabProps> = ({
                   <p className="text-base text-slate-500 font-mono italic">
                     {currentWord.ipa || '/.../'} • <span className="font-sans font-bold text-[#0284c7] uppercase text-xs">{currentWord.pos || 'vocabulary'}</span>
                   </p>
+
+                  {/* Speech Feedback Banner (ELSA style) */}
+                  {speechFeedback && (
+                    <div className={`mt-4 p-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 max-w-md mx-auto ${
+                      speechFeedback.isCorrect
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-800 border border-rose-200'
+                    }`}>
+                      {speechFeedback.isCorrect ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-rose-600" />}
+                      <span>{speechFeedback.text} {speechFeedback.isCorrect ? '— Phát âm chuẩn xác! 🎯' : '— Hãy phát âm lại nhé!'}</span>
+                    </div>
+                  )}
 
                   {/* Collocations preview */}
                   {currentWord.collocations && currentWord.collocations.length > 0 && (
