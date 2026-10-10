@@ -7,6 +7,7 @@ export interface Word {
   category?: string
   example_en?: string
   example_vn?: string
+  collocations?: string[]
 }
 
 export interface Question {
@@ -29,9 +30,16 @@ export interface Question {
   }[]
 }
 
-export interface Test {
-  id: number
-  title: string
-  year: number
-  total_questions: number
+export interface UserStats {
+  name: string
+  targetScore: number
+  currentEstimatedScore: number
+  streakDays: number
+  vocabLearned: number
+  vocabMastered: number
+  totalVocabGoal: number
+  readingAccuracy: number
+  readingQuestionsDone: number
+  dailyGoalDone: number
+  dailyGoalTotal: number
 }

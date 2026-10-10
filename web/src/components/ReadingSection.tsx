@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Question } from '../types'
-import { CheckCircle2, XCircle, HelpCircle, BookOpen, Award } from 'lucide-react'
+import { CheckCircle2, XCircle, HelpCircle, BookOpen, Award, RotateCcw, Sparkles } from 'lucide-react'
 
 interface ReadingProps {
   questions: Question[]
@@ -37,64 +37,79 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
   const scoreInfo = calculateScore()
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
-      {/* Top Banner / Controls */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Top Banner & Part Filters */}
+      <div className="bg-white p-6 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-indigo-600" /> ETS 2023 Reading Training
-          </h2>
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-xl bg-[#e0f2fe] text-[#0284c7] flex items-center justify-center font-bold">
+              <BookOpen className="w-4 h-4" />
+            </span>
+            <h2 className="text-lg font-black text-slate-800">
+              ETS 2023 Reading Training & Exam Mode
+            </h2>
+          </div>
           <p className="text-xs text-slate-500 mt-1">
-            Luyện tập các câu hỏi then chốt (Part 5: Ngữ pháp / Từ vựng, Part 7: Đọc hiểu văn bản thực tế)
+            Gồm {questions.length} câu hỏi chọn lọc chuẩn format thi thật (Part 5, 6, 7). Chấm điểm và phân tích ngữ pháp tức thì.
           </p>
         </div>
 
         {/* Part Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 bg-[#f8fafc] p-1.5 rounded-2xl border border-slate-100">
           <button
             onClick={() => setActivePartFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activePartFilter === 'all'
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-[#0284c7] text-white shadow-sm'
+                : 'text-slate-600 hover:text-[#0284c7]'
             }`}
           >
-            Tất cả
+            Tất cả ({questions.length})
           </button>
           <button
             onClick={() => setActivePartFilter(5)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activePartFilter === 5
-                ? 'bg-indigo-600 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-[#0284c7] text-white shadow-sm'
+                : 'text-slate-600 hover:text-[#0284c7]'
             }`}
           >
-            Part 5 (Incomplete Sentences)
+            Part 5 (Câu đơn)
+          </button>
+          <button
+            onClick={() => setActivePartFilter(6)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activePartFilter === 6
+                ? 'bg-[#0284c7] text-white shadow-sm'
+                : 'text-slate-600 hover:text-[#0284c7]'
+            }`}
+          >
+            Part 6 (Điền đoạn)
           </button>
           <button
             onClick={() => setActivePartFilter(7)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activePartFilter === 7
-                ? 'bg-indigo-600 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-[#0284c7] text-white shadow-sm'
+                : 'text-slate-600 hover:text-[#0284c7]'
             }`}
           >
-            Part 7 (Reading Comprehension)
+            Part 7 (Đọc hiểu)
           </button>
         </div>
       </div>
 
-      {/* Result Card if submitted */}
+      {/* Result Card when submitted */}
       {submitted && (
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in">
+        <div className="bg-gradient-to-r from-[#0284c7] to-[#0369a1] rounded-3xl p-6 text-white shadow-lg shadow-sky-100 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/10 backdrop-blur rounded-2xl">
-              <Award className="w-8 h-8 text-yellow-300" />
+            <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
+              <Award className="w-8 h-8 text-amber-300" />
             </div>
             <div>
-              <h3 className="text-lg font-bold">Kết quả bài làm của bạn</h3>
-              <p className="text-xs text-indigo-100 mt-0.5">
-                Đúng {scoreInfo.correct} / {scoreInfo.total} câu ({scoreInfo.percentage}%)
+              <h3 className="text-lg font-black">Kết quả bài làm của bạn</h3>
+              <p className="text-xs text-sky-100 mt-0.5">
+                Chính xác: <span className="font-extrabold text-white text-sm">{scoreInfo.correct} / {scoreInfo.total}</span> câu ({scoreInfo.percentage}%) • Ước tính điểm Reading: ~{Math.min(495, scoreInfo.percentage * 4.9).toFixed(0)} / 495
               </p>
             </div>
           </div>
@@ -103,9 +118,9 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
               setSubmitted(false)
               setSelectedAnswers({})
             }}
-            className="px-5 py-2.5 bg-white text-indigo-600 font-bold rounded-xl text-xs hover:bg-indigo-50 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-6 py-3 bg-white text-[#0284c7] font-bold rounded-2xl text-xs hover:bg-sky-50 transition-colors shadow-sm cursor-pointer"
           >
-            Làm lại từ đầu
+            <RotateCcw className="w-4 h-4" /> Làm lại từ đầu
           </button>
         </div>
       )}
@@ -122,46 +137,47 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
               className={`bg-white rounded-3xl border transition-all p-6 md:p-8 ${
                 submitted
                   ? isCorrect
-                    ? 'border-emerald-300 bg-emerald-50/20'
-                    : 'border-rose-300 bg-rose-50/20'
-                  : 'border-slate-200 hover:border-slate-300'
+                    ? 'border-emerald-300 bg-emerald-50/15'
+                    : 'border-rose-300 bg-rose-50/15'
+                  : 'border-[#e2e8f0] hover:border-sky-300'
               }`}
             >
               {/* Question Header */}
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md">
+                <span className="text-xs font-bold px-3 py-1 bg-[#f0f9ff] text-[#0284c7] border border-[#bae6fd] rounded-xl">
                   Part {q.part_number} • Câu {q.question_number}
                 </span>
+
                 {submitted && (
-                  <span className={`text-xs font-bold flex items-center gap-1 ${
+                  <span className={`text-xs font-bold flex items-center gap-1.5 ${
                     isCorrect ? 'text-emerald-600' : 'text-rose-600'
                   }`}>
                     {isCorrect ? (
                       <>
-                        <CheckCircle2 className="w-4 h-4" /> Chính xác
+                        <CheckCircle2 className="w-4 h-4" /> Đúng (+5 điểm)
                       </>
                     ) : (
                       <>
-                        <XCircle className="w-4 h-4" /> Chưa đúng (Đáp án: {q.correct_answer})
+                        <XCircle className="w-4 h-4" /> Chưa đúng (Đáp án đúng: {q.correct_answer})
                       </>
                     )}
                   </span>
                 )}
               </div>
 
-              {/* Passage if exists (e.g. Part 7) */}
+              {/* Passage for Part 6 & Part 7 */}
               {q.passage_text && (
-                <div className="mb-6 p-5 bg-slate-50 border border-slate-200 rounded-2xl font-serif text-sm leading-relaxed text-slate-800 whitespace-pre-line shadow-inner">
+                <div className="mb-6 p-6 bg-[#f8fafc] border border-slate-200 rounded-2xl font-serif text-sm leading-relaxed text-slate-800 whitespace-pre-line shadow-inner">
                   {q.passage_text}
                 </div>
               )}
 
               {/* Question Text */}
-              <p className="text-base font-semibold text-slate-900 mb-6 leading-relaxed">
+              <p className="text-base font-bold text-slate-800 mb-6 leading-relaxed">
                 {q.question_text}
               </p>
 
-              {/* Options */}
+              {/* Options Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 {[
                   { key: 'A', text: q.option_a },
@@ -169,17 +185,17 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
                   { key: 'C', text: q.option_c },
                   { key: 'D', text: q.option_d }
                 ].map((opt) => {
-                  let optStyle = 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-700'
+                  let optStyle = 'border-[#e2e8f0] hover:border-sky-300 hover:bg-[#f0f9ff] text-slate-700 bg-white'
 
                   if (userAnswer === opt.key) {
-                    optStyle = 'border-indigo-600 bg-indigo-50/60 text-indigo-900 font-semibold ring-1 ring-indigo-500'
+                    optStyle = 'border-[#0284c7] bg-[#e0f2fe] text-[#0284c7] font-bold ring-2 ring-[#0284c7]'
                   }
 
                   if (submitted) {
                     if (opt.key === q.correct_answer) {
-                      optStyle = 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold ring-1 ring-emerald-500'
+                      optStyle = 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold ring-2 ring-emerald-500'
                     } else if (userAnswer === opt.key && !isCorrect) {
-                      optStyle = 'border-rose-500 bg-rose-50 text-rose-900 font-semibold ring-1 ring-rose-500'
+                      optStyle = 'border-rose-500 bg-rose-50 text-rose-900 font-bold ring-2 ring-rose-500'
                     }
                   }
 
@@ -188,9 +204,13 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
                       key={opt.key}
                       disabled={submitted}
                       onClick={() => handleSelectOption(q.id, opt.key)}
-                      className={`text-left p-4 rounded-2xl border transition-all flex items-start gap-3 ${optStyle}`}
+                      className={`text-left p-4 rounded-2xl border transition-all flex items-start gap-3 cursor-pointer ${optStyle}`}
                     >
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                      <span className={`shrink-0 w-6 h-6 rounded-xl flex items-center justify-center text-xs font-black ${
+                        userAnswer === opt.key 
+                          ? 'bg-[#0284c7] text-white' 
+                          : 'bg-[#f1f5f9] text-slate-600'
+                      }`}>
                         {opt.key}
                       </span>
                       <span className="text-sm mt-0.5">{opt.text}</span>
@@ -199,27 +219,27 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
                 })}
               </div>
 
-              {/* Explanation & Vocab Notes (When Submitted) */}
+              {/* Explanation & Vocab Notes when submitted */}
               {submitted && (
-                <div className="pt-5 border-t border-slate-200/60 space-y-3">
+                <div className="pt-5 border-t border-slate-100 space-y-3">
                   {q.explanation && (
-                    <div className="text-xs bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-2xl leading-relaxed">
-                      <span className="font-bold flex items-center gap-1.5 mb-1 text-amber-800">
-                        <HelpCircle className="w-4 h-4" /> Giải thích chi tiết:
+                    <div className="text-xs bg-[#f0f9ff] border border-[#bae6fd] text-[#0369a1] p-4 rounded-2xl leading-relaxed">
+                      <span className="font-extrabold flex items-center gap-1.5 mb-1.5 text-[#0284c7]">
+                        <HelpCircle className="w-4 h-4" /> Giải thích chi tiết & Mẹo làm bài:
                       </span>
                       {q.explanation}
                     </div>
                   )}
 
                   {q.vocabulary_notes && q.vocabulary_notes.length > 0 && (
-                    <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-xs">
-                      <span className="font-bold text-indigo-900 block mb-2">
-                        💡 Từ vựng quan trọng trong câu:
+                    <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl text-xs">
+                      <span className="font-bold text-emerald-900 block mb-2">
+                        💡 Từ vựng trọng tâm trích từ đề:
                       </span>
                       <div className="flex flex-wrap gap-2">
                         {q.vocabulary_notes.map((vn, i) => (
-                          <span key={i} className="px-2.5 py-1 bg-white border border-indigo-200 rounded-lg text-slate-800">
-                            <strong>{vn.word}</strong>: {vn.meaning}
+                          <span key={i} className="px-3 py-1 bg-white border border-emerald-300 rounded-xl text-slate-800 font-medium shadow-xs">
+                            <strong className="text-emerald-700">{vn.word}</strong>: {vn.meaning}
                           </span>
                         ))}
                       </div>
@@ -234,12 +254,12 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
 
       {/* Submit Button */}
       {!submitted && (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-4 pb-8">
           <button
             onClick={() => setSubmitted(true)}
-            className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-indigo-200 transition-all text-sm"
+            className="px-10 py-4 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold rounded-2xl shadow-lg shadow-sky-200 transition-all text-sm flex items-center gap-2 cursor-pointer"
           >
-            Nộp bài & Xem giải thích chi tiết
+            <Sparkles className="w-4 h-4" /> Nộp bài & Xem giải thích chi tiết
           </button>
         </div>
       )}
