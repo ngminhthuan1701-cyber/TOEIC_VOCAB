@@ -348,9 +348,9 @@ function speak(text) {
 }
 
 /* ---------- State & storage ---------- */
-const defaultMeta = () => ({ newPerDay: 15, log: {}, newLog: {} });
+/* ---------- State & storage ---------- */
+const defaultMeta = () => ({ username: '', newPerDay: 15, log: {}, newLog: {} });
 const state = { words: {}, passages: {}, meta: defaultMeta() };
-const LS = 'so-tu.v1';
 
 const SUPABASE_URL = 'https://dqbhginmdwkvckyyzlkv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_K6Eh9iJPx4NvCUEj4VUMVw_KFQgFHwC';
@@ -365,22 +365,39 @@ try {
 
 let currentUser = null;
 
+function getStorageKey() {
+  return currentUser ? `so-tu.v1.user_${currentUser.id}` : 'so-tu.v1.guest';
+}
+
+function resetState() {
+  state.words = {};
+  state.passages = {};
+  state.meta = defaultMeta();
+  session = null;
+  if (typeof pr !== 'undefined') pr.run = null;
+}
+
 const Store = {
   mode: 'local',
   loadLocal() {
     try {
-      const raw = localStorage.getItem(LS);
+      const key = getStorageKey();
+      const raw = localStorage.getItem(key);
       if (raw) {
         const o = JSON.parse(raw);
         state.words = o.words || {};
         state.passages = o.passages || {};
         state.meta = Object.assign(defaultMeta(), o.meta || {});
+      } else {
+        state.words = {};
+        state.passages = {};
+        state.meta = defaultMeta();
       }
     } catch (e) {}
   },
   saveLocal() {
     try {
-      localStorage.setItem(LS, JSON.stringify(state));
+      localStorage.setItem(getStorageKey(), JSON.stringify(state));
     } catch (e) {
       if (!this.warned) {
         this.warned = true;
@@ -398,11 +415,16 @@ const Store = {
       }
       sb.auth.onAuthStateChange(async (evt, sess) => {
         if (sess && sess.user) {
-          currentUser = sess.user;
-          await this.sync();
+          if (!currentUser || currentUser.id !== sess.user.id) {
+            currentUser = sess.user;
+            await this.sync();
+          }
         } else {
           currentUser = null;
           this.mode = 'local';
+          resetState();
+          this.loadLocal();
+          renderAll();
           setSync();
         }
       });
@@ -413,16 +435,17 @@ const Store = {
   async sync() {
     if (!currentUser || !sb) return;
     this.mode = 'cloud';
-    setSync('Đang đồng bộ…');
+    setSync('Đang tải dữ liệu…');
     try {
+      // Tải riêng dữ liệu của currentUser
       const [wRes, pRes, profRes] = await Promise.all([
-        sb.from('words').select('*'),
-        sb.from('passages').select('*'),
+        sb.from('words').select('*').eq('user_id', currentUser.id),
+        sb.from('passages').select('*').eq('user_id', currentUser.id),
         sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle()
       ]);
 
+      const rMap = {};
       if (wRes.data) {
-        const rMap = {};
         wRes.data.forEach(w => {
           rMap[w.id] = {
             id: w.id,
@@ -443,15 +466,10 @@ const Store = {
             created: Number(w.created) || Date.now()
           };
         });
-        const localList = Object.values(state.words);
-        state.words = Object.assign({}, rMap, state.words);
-        for (const lw of localList) {
-          if (!rMap[lw.id]) await this.pushWord(lw);
-        }
       }
 
+      const pMap = {};
       if (pRes.data) {
-        const pMap = {};
         pRes.data.forEach(p => {
           pMap[p.id] = {
             id: p.id,
@@ -463,19 +481,20 @@ const Store = {
             created: Number(p.created) || Date.now()
           };
         });
-        const localPList = Object.values(state.passages);
-        state.passages = Object.assign({}, pMap, state.passages);
-        for (const lp of localPList) {
-          if (!pMap[lp.id]) await this.pushPassage(lp);
-        }
       }
 
+      // Kho từ của người này hoàn toàn riêng biệt, ghi đè state
+      state.words = rMap;
+      state.passages = pMap;
+
       if (profRes.data) {
-        state.meta.username = profRes.data.username || state.meta.username || '';
-        state.meta.newPerDay = profRes.data.new_per_day || state.meta.newPerDay || 15;
-        state.meta.log = Object.assign({}, profRes.data.log || {}, state.meta.log || {});
-        state.meta.newLog = Object.assign({}, profRes.data.new_log || {}, state.meta.newLog || {});
+        state.meta.username = profRes.data.username || '';
+        state.meta.newPerDay = profRes.data.new_per_day || 15;
+        state.meta.log = profRes.data.log || {};
+        state.meta.newLog = profRes.data.new_log || {};
       } else {
+        state.meta = defaultMeta();
+        state.meta.username = getDisplayUsername(currentUser);
         await this.saveMeta();
       }
 
@@ -1645,6 +1664,9 @@ if (sob) sob.addEventListener('click', async () => {
   await sb.auth.signOut();
   currentUser = null;
   Store.mode = 'local';
+  resetState();
+  Store.loadLocal();
+  renderAll();
   setSync();
   $('#authDlg').close();
   toast('Đã đăng xuất.');
