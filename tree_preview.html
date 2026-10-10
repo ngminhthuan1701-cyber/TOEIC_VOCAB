@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cây Tri Thức TOEIC - 3D Visual Masterpiece</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(0.4deg); }
+    }
+    @keyframes pulseAura {
+      0%, 100% { opacity: 0.4; transform: scale(0.96); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+    @keyframes dropFall {
+      0% { transform: translateY(-20px) scale(0.8); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translateY(120px) scale(1.2); opacity: 0; }
+    }
+    .floating-card { animation: floatCard 5s ease-in-out infinite; }
+    .aura-glow { animation: pulseAura 3s ease-in-out infinite; }
+    .drop-anim { animation: dropFall 0.7s ease-in forwards; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased p-4 sm:p-8 min-h-screen flex items-center justify-center font-sans">
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl max-w-xl w-full">
+    
+    <!-- Top Header -->
+    <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-3xl">🌱</span>
+          <h2 class="font-bold text-2xl tracking-tight text-slate-900">Cây Tri Thức TOEIC</h2>
+        </div>
+        <p class="text-sm text-slate-500 mt-0.5">Mỗi từ vựng bạn nhớ là một giọt nước nuôi cây lớn lên!</p>
+      </div>
+      <div class="text-right">
+        <span id="stageBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-sm">
+          🌰 Cấp 1: Mầm Chậu Gốm
+        </span>
+        <div class="text-xs font-mono font-bold text-slate-400 mt-1" id="counterText">10 / 500 từ</div>
+      </div>
+    </div>
+
+    <!-- Main Visual Stage: 3D Pixar Illustrated Tree -->
+    <div class="relative w-full aspect-square max-h-[380px] rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-gradient-to-b from-amber-50/50 via-emerald-50/30 to-sky-50/40 flex items-center justify-center p-3">
+      
+      <!-- Glowing Background Aura -->
+      <div id="aura" class="absolute inset-8 rounded-full bg-emerald-400/20 blur-3xl aura-glow pointer-events-none transition-all duration-700"></div>
+
+      <!-- Water drops effect container -->
+      <div id="dropsContainer" class="absolute inset-0 pointer-events-none flex justify-center items-center gap-6 z-30"></div>
+
+      <!-- Stage Images with smooth Crossfade -->
+      <div class="relative w-full h-full rounded-xl overflow-hidden shadow-lg floating-card border border-white/40">
+        <img id="imgStage1" src="./assets/tree/stage1.jpg" alt="Mầm non" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-100">
+        <img id="imgStage2" src="./assets/tree/stage2.jpg" alt="Cây non" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0">
+        <img id="imgStage3" src="./assets/tree/stage3.jpg" alt="Cây kết trái vàng" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0">
+        <img id="imgStage4" src="./assets/tree/stage4.jpg" alt="Cây đại thụ vương miện" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0">
+        
+        <!-- Bottom Floating Caption -->
+        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-white text-center">
+          <div class="font-bold text-base drop-shadow-md" id="stageTitle">Mầm Non Sương Mai</div>
+          <div class="text-xs text-stone-200 mt-0.5 drop-shadow-sm italic" id="stageDesc">"Hạt giống từ vựng đầu tiên được gieo trồng."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="mt-5 space-y-1.5">
+      <div class="flex justify-between text-xs font-semibold">
+        <span class="text-slate-500">Tiến trình trưởng thành</span>
+        <span id="percentText" class="text-emerald-600 font-bold">2%</span>
+      </div>
+      <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+        <div id="growthBar" class="h-full bg-gradient-to-r from-amber-400 via-emerald-500 to-teal-400 rounded-full transition-all duration-500" style="width: 2%"></div>
+      </div>
+    </div>
+
+    <!-- Interactive Simulator Controls -->
+    <div class="mt-6 pt-5 border-t border-slate-100 space-y-4">
+      <div class="flex items-center justify-between gap-3">
+        <label for="slider" class="text-xs sm:text-sm font-semibold text-slate-700">Thử kéo số từ đã thuộc:</label>
+        <span id="sliderValue" class="font-mono text-sm font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">10 từ</span>
+      </div>
+      <input type="range" id="slider" min="0" max="500" value="10" step="5" class="w-full accent-emerald-600 cursor-pointer h-2 bg-slate-200 rounded-lg">
+
+      <!-- Milestones Buttons -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs text-slate-400">Xem nhanh:</span>
+        <button class="px-2.5 py-1 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition active:scale-95 shadow-sm" onclick="setWordCount(10)">🌰 10 từ (Mầm non)</button>
+        <button class="px-2.5 py-1 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition active:scale-95 shadow-sm" onclick="setWordCount(90)">🌱 90 từ (Cây non)</button>
+        <button class="px-2.5 py-1 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition active:scale-95 shadow-sm" onclick="setWordCount(220)">🍎 220 từ (Quả vàng)</button>
+        <button class="px-2.5 py-1 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition active:scale-95 shadow-sm" onclick="setWordCount(450)">👑 450+ từ (Đại thụ vương miện)</button>
+      </div>
+
+      <!-- Action Button: Water Plant -->
+      <div class="flex items-center justify-between pt-2">
+        <button id="waterBtn" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition shadow-md hover:shadow-lg active:scale-95" onclick="waterPlant()">
+          <span>💧</span> Tưới nước cho cây (+15 từ)
+        </button>
+        <span class="text-xs text-slate-400">Bấm nút để tưới nước giúp cây lớn!</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const slider = document.getElementById('slider');
+    const sliderValue = document.getElementById('sliderValue');
+    const stageBadge = document.getElementById('stageBadge');
+    const counterText = document.getElementById('counterText');
+    const percentText = document.getElementById('percentText');
+    const growthBar = document.getElementById('growthBar');
+    const stageTitle = document.getElementById('stageTitle');
+    const stageDesc = document.getElementById('stageDesc');
+    const aura = document.getElementById('aura');
+
+    const img1 = document.getElementById('imgStage1');
+    const img2 = document.getElementById('imgStage2');
+    const img3 = document.getElementById('imgStage3');
+    const img4 = document.getElementById('imgStage4');
+
+    let currentWords = 10;
+
+    function updateTreeStage(words) {
+      currentWords = words;
+      slider.value = words;
+      sliderValue.textContent = words + ' từ';
+      counterText.textContent = words + ' / 500 từ';
+
+      const pct = Math.min(100, Math.round((words / 500) * 100));
+      percentText.textContent = pct + '%';
+      growthBar.style.width = pct + '%';
+
+      [img1, img2, img3, img4].forEach(img => img.classList.replace('opacity-100', 'opacity-0'));
+
+      if (words < 50) {
+        img1.classList.replace('opacity-0', 'opacity-100');
+        stageBadge.innerHTML = '🌰 Cấp 1: Mầm Chậu Gốm';
+        stageBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200';
+        stageTitle.textContent = 'Mầm Non Sương Mai';
+        stageDesc.textContent = '"Gieo một từ vựng, bắt đầu hành trình chinh phục tiếng Anh."';
+        aura.className = 'absolute inset-8 rounded-full bg-amber-400/20 blur-3xl aura-glow pointer-events-none transition-all duration-700';
+      } else if (words < 150) {
+        img2.classList.replace('opacity-0', 'opacity-100');
+        stageBadge.innerHTML = '🌱 Cấp 2: Cây Non Đồi Cỏ';
+        stageBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-lime-50 text-lime-700 border border-lime-200';
+        stageTitle.textContent = 'Cây Non Vươn Nắng';
+        stageDesc.textContent = '"Thân cây uốn lượn vững chãi, lá non xanh mướt đung đưa trong gió!"';
+        aura.className = 'absolute inset-8 rounded-full bg-lime-400/25 blur-3xl aura-glow pointer-events-none transition-all duration-700';
+      } else if (words < 350) {
+        img3.classList.replace('opacity-0', 'opacity-100');
+        stageBadge.innerHTML = '🍎 Cấp 3: Hoa & Quả Vàng';
+        stageBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200';
+        stageTitle.textContent = 'Vườn Cổ Tích Tri Thức';
+        stageDesc.textContent = '"Quả ngọt tri thức chín vàng rực rỡ, sẵn sàng cho các bài đọc Part 7!"';
+        aura.className = 'absolute inset-8 rounded-full bg-emerald-400/30 blur-3xl aura-glow pointer-events-none transition-all duration-700';
+      } else {
+        img4.classList.replace('opacity-0', 'opacity-100');
+        stageBadge.innerHTML = '👑 Cấp 4: Đại Thụ TOEIC Master';
+        stageBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 animate-pulse';
+        stageTitle.textContent = 'Cây Đại Thụ Vũ Trụ & Vương Miện';
+        stageDesc.textContent = '"Đỉnh cao tri thức với ánh sáng cực quang và vương miện TOEIC danh giá!"';
+        aura.className = 'absolute inset-8 rounded-full bg-purple-400/35 blur-3xl aura-glow pointer-events-none transition-all duration-700';
+      }
+    }
+
+    slider.addEventListener('input', (e) => {
+      updateTreeStage(parseInt(e.target.value, 10));
+    });
+
+    function setWordCount(n) {
+      updateTreeStage(n);
+    }
+
+    function waterPlant() {
+      const btn = document.getElementById('waterBtn');
+      btn.disabled = true;
+
+      const drops = document.getElementById('dropsContainer');
+      drops.innerHTML = `
+        <span class="text-3xl drop-anim">💧</span>
+        <span class="text-2xl drop-anim" style="animation-delay: 0.15s">💧</span>
+        <span class="text-3xl drop-anim" style="animation-delay: 0.3s">💧</span>
+      `;
+
+      setTimeout(() => {
+        drops.innerHTML = '';
+        btn.disabled = false;
+        updateTreeStage(Math.min(500, currentWords + 15));
+      }, 700);
+    }
+
+    updateTreeStage(10);
+  </script>
+</body>
+</html>
