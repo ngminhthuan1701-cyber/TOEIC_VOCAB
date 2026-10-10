@@ -1,0 +1,13 @@
+# Node & Build artifacts
+node_modules/
+dist/
+.env.local
+.env.*.local
+
+# Thư mục tài liệu gốc nặng (PDF scan hàng trăm MB và audio MP3)
+# Không đẩy lên Git để tránh vượt hạn chế 100MB của GitHub
+File đề+nghe khoá cô Thắm/
+
+# OS files
+.DS_Store
+Thumbs.db

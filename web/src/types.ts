@@ -1,0 +1,37 @@
+export interface Word {
+  id: number
+  word: string
+  ipa?: string
+  pos?: string
+  meaning_vn: string
+  category?: string
+  example_en?: string
+  example_vn?: string
+}
+
+export interface Question {
+  id: number
+  test_id: number
+  part_number: number
+  question_number: number
+  passage_text?: string
+  passage_image_url?: string
+  question_text: string
+  option_a: string
+  option_b: string
+  option_c: string
+  option_d: string
+  correct_answer: string
+  explanation?: string
+  vocabulary_notes?: {
+    word: string
+    meaning: string
+  }[]
+}
+
+export interface Test {
+  id: number
+  title: string
+  year: number
+  total_questions: number
+}
