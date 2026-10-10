@@ -297,8 +297,8 @@ dialog::backdrop{background:rgba(10,15,30,.45)}
 </dialog>
 <dialog id="authDlg">
   <div class="dlg">
-    <h3 id="authTitle">Tài khoản Supabase</h3>
-    <p class="lead" style="font-size:14px;margin-bottom:14px">Đăng nhập để đồng bộ dữ liệu an toàn trên Supabase Cloud.</p>
+    <h3 id="authTitle">Tài khoản học tập</h3>
+    <p class="lead" style="font-size:14px;margin-bottom:14px">Mỗi người dùng có tên tài khoản riêng để lưu từ vựng độc lập (không cần email).</p>
     <div id="authUserInfo" hidden style="margin-bottom:16px;padding:14px;background:var(--surface-2);border-radius:12px;display:flex;align-items:center;gap:12px">
       <img id="authUserAvatar" class="avatar lg" src="" alt="Avatar">
       <div style="min-width:0">
@@ -307,12 +307,12 @@ dialog::backdrop{background:rgba(10,15,30,.45)}
       </div>
     </div>
     <div id="authForm">
-      <label class="field">Email<input id="authEmail" type="email" placeholder="ten@vidu.com" autocomplete="email"></label>
-      <label class="field">Mật khẩu<input id="authPassword" type="password" placeholder="Mật khẩu tối thiểu 6 ký tự" autocomplete="current-password"></label>
+      <label class="field">Tên tài khoản<input id="authUsername" type="text" placeholder="Ví dụ: thuan, user1, minhthuan" autocomplete="username" spellcheck="false"></label>
+      <label class="field">Mật khẩu<input id="authPassword" type="password" placeholder="Mật khẩu từ 6 ký tự" autocomplete="current-password"></label>
       <div class="dlg-foot" style="margin-top:14px">
         <button class="btn" type="button" data-close>Đóng</button>
         <div class="row" style="margin-left:auto">
-          <button class="btn" type="button" id="signUpBtn">Đăng ký</button>
+          <button class="btn" type="button" id="signUpBtn">Tạo mới</button>
           <button class="btn primary" type="button" id="signInBtn">Đăng nhập</button>
         </div>
       </div>
@@ -570,9 +570,22 @@ const Store = {
   }
 };
 
+function toInternalEmail(username) {
+  const u = String(username || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+  if (!u) return '';
+  return u.includes('@') ? u : `${u}@toeic.local`;
+}
+
+function getDisplayUsername(user) {
+  if (!user) return 'Tài khoản';
+  const email = user.email || '';
+  const cleaned = email.replace(/@toeic\.local$/i, '').replace(/@.*$/, '');
+  return cleaned || 'Tài khoản';
+}
+
 function getUserAvatar(user) {
   if (!user) return '';
-  const seed = encodeURIComponent((user.email || user.id || 'toeic').toLowerCase());
+  const seed = encodeURIComponent(getDisplayUsername(user));
   return `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
 }
 
@@ -591,7 +604,7 @@ function setSync(msg) {
     }
   } else {
     el.textContent = 'Đã kết nối Supabase';
-    const name = currentUser.email ? currentUser.email.split('@')[0] : 'Tài khoản';
+    const name = getDisplayUsername(currentUser);
     const avatar = getUserAvatar(currentUser);
     if (btn) {
       btn.innerHTML = `<img class="avatar" src="${esc(avatar)}" alt="Avatar"> <span>${esc(name)}</span>`;
@@ -1495,17 +1508,18 @@ function openAuthDialog() {
   if (currentUser) {
     title.textContent = 'Thông tin tài khoản';
     userInfo.hidden = false;
-    userEmail.textContent = currentUser.email || 'Đã đăng nhập';
+    userEmail.textContent = 'Tài khoản: ' + getDisplayUsername(currentUser);
     const avatarImg = $('#authUserAvatar');
     if (avatarImg) avatarImg.src = getUserAvatar(currentUser);
     form.hidden = true;
     actions.hidden = false;
   } else {
-    title.textContent = 'Đăng nhập tài khoản';
+    title.textContent = 'Đăng nhập / Tạo tài khoản';
     userInfo.hidden = true;
     form.hidden = false;
     actions.hidden = true;
-    $('#authEmail').value = '';
+    const uField = $('#authUsername');
+    if (uField) uField.value = '';
     $('#authPassword').value = '';
   }
   dlg.showModal();
@@ -1517,17 +1531,42 @@ if (ab) ab.addEventListener('click', openAuthDialog);
 const sib = $('#signInBtn');
 if (sib) sib.addEventListener('click', async e => {
   if (!sb) { toast('Chưa kết nối được với Supabase.'); return; }
-  const email = $('#authEmail').value.trim();
+  const username = ($('#authUsername').value || '').trim();
   const password = $('#authPassword').value;
-  if (!email || !password) { toast('Vui lòng nhập email và mật khẩu.'); return; }
-  const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang đăng nhập…';
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (!username || !password) { toast('Vui lòng nhập tên tài khoản và mật khẩu.'); return; }
+  const email = toInternalEmail(username);
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang xử lý…';
+
+  let { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  // Tự động đăng ký nếu tài khoản mới
+  if (error && (error.message.includes('Invalid login credentials') || error.status === 400)) {
+    const signUpRes = await sb.auth.signUp({ email, password });
+    if (!signUpRes.error && signUpRes.data && signUpRes.data.user) {
+      if (signUpRes.data.session) {
+        data = signUpRes.data;
+        error = null;
+        toast(`Đã tạo mới tài khoản "${username}" và đăng nhập!`);
+      } else {
+        const trylogin = await sb.auth.signInWithPassword({ email, password });
+        if (trylogin.data && trylogin.data.session) {
+          data = trylogin.data;
+          error = null;
+        } else {
+          toast(`Đã tạo tài khoản "${username}". Vui lòng tắt "Confirm email" trong Supabase để vào ngay.`);
+          btn.disabled = false; btn.textContent = 'Đăng nhập';
+          return;
+        }
+      }
+    }
+  }
+
   btn.disabled = false; btn.textContent = 'Đăng nhập';
   if (error) {
     toast('Lỗi: ' + (error.message || 'Đăng nhập thất bại'));
-  } else {
+  } else if (data && data.user) {
     $('#authDlg').close();
-    toast('Đăng nhập thành công!');
+    toast(`Xin chào ${getDisplayUsername(data.user)}!`);
     currentUser = data.user;
     Store.sync();
   }
@@ -1536,20 +1575,30 @@ if (sib) sib.addEventListener('click', async e => {
 const sub = $('#signUpBtn');
 if (sub) sub.addEventListener('click', async e => {
   if (!sb) { toast('Chưa kết nối được với Supabase.'); return; }
-  const email = $('#authEmail').value.trim();
+  const username = ($('#authUsername').value || '').trim();
   const password = $('#authPassword').value;
-  if (!email || password.length < 6) { toast('Vui lòng nhập email và mật khẩu từ 6 ký tự.'); return; }
-  const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang đăng ký…';
+  if (!username || password.length < 6) { toast('Vui lòng nhập tên tài khoản và mật khẩu từ 6 ký tự.'); return; }
+  const email = toInternalEmail(username);
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang tạo…';
   const { data, error } = await sb.auth.signUp({ email, password });
-  btn.disabled = false; btn.textContent = 'Đăng ký';
+  btn.disabled = false; btn.textContent = 'Tạo mới';
   if (error) {
-    toast('Lỗi: ' + (error.message || 'Đăng ký thất bại'));
+    toast('Lỗi: ' + (error.message || 'Tạo tài khoản thất bại'));
   } else {
-    toast('Đăng ký thành công!');
+    toast(`Đã tạo tài khoản "${username}"!`);
     if (data.session) {
       $('#authDlg').close();
       currentUser = data.user;
       Store.sync();
+    } else {
+      const loginTry = await sb.auth.signInWithPassword({ email, password });
+      if (loginTry.data && loginTry.data.session) {
+        $('#authDlg').close();
+        currentUser = loginTry.data.user;
+        Store.sync();
+      } else {
+        toast('Lưu ý: Tắt "Confirm email" trong Supabase Dashboard để không cần xác minh.');
+      }
     }
   }
 });
