@@ -196,6 +196,7 @@ export function App() {
               onAddWord={handleAddWord}
               onCreateFolder={handleCreateFolder}
               onUpdateMemoryLevel={handleUpdateMemoryLevel}
+              onUpdateFSRS={handleUpdateFSRS}
             />
           )}
 
