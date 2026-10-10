@@ -489,8 +489,9 @@ const Store = {
   },
   async pushWord(w) {
     if (!currentUser || !sb) return;
+    setSync('Đang lưu…');
     try {
-      await sb.from('words').upsert({
+      const { error } = await sb.from('words').upsert({
         id: w.id,
         user_id: currentUser.id,
         word: w.word,
@@ -509,16 +510,24 @@ const Store = {
         last: w.last || 0,
         created: w.created || Date.now()
       });
+      if (error) {
+        console.warn('Lỗi lưu từ vào Supabase:', error);
+        if (error.code === '42P01') toast('Chưa tạo bảng words trên Supabase! Hãy chạy file supabase_schema.sql.');
+      }
     } catch (e) { console.warn('pushWord error:', e); }
+    finally { setSync(); }
   },
   async deleteWord(id) {
     if (!currentUser || !sb) return;
+    setSync('Đang xóa…');
     try { await sb.from('words').delete().eq('id', id); } catch (e) {}
+    finally { setSync(); }
   },
   async pushPassage(p) {
     if (!currentUser || !sb) return;
+    setSync('Đang lưu bài đọc…');
     try {
-      await sb.from('passages').upsert({
+      const { error } = await sb.from('passages').upsert({
         id: p.id,
         user_id: currentUser.id,
         title: p.title || '',
@@ -528,11 +537,18 @@ const Store = {
         text: p.text || '',
         created: p.created || Date.now()
       });
+      if (error) {
+        console.warn('Lỗi lưu bài đọc vào Supabase:', error);
+        if (error.code === '42P01') toast('Chưa tạo bảng passages trên Supabase! Hãy chạy file supabase_schema.sql.');
+      }
     } catch (e) { console.warn('pushPassage error:', e); }
+    finally { setSync(); }
   },
   async deletePassage(id) {
     if (!currentUser || !sb) return;
+    setSync('Đang xóa…');
     try { await sb.from('passages').delete().eq('id', id); } catch (e) {}
+    finally { setSync(); }
   },
   saveWord(w) {
     state.words[w.id] = w;
@@ -548,7 +564,7 @@ const Store = {
     this.saveLocal();
     if (!currentUser || !sb) return;
     try {
-      await sb.from('profiles').upsert({
+      const { error } = await sb.from('profiles').upsert({
         id: currentUser.id,
         email: currentUser.email,
         new_per_day: state.meta.newPerDay,
@@ -556,6 +572,9 @@ const Store = {
         new_log: state.meta.newLog,
         updated_at: new Date().toISOString()
       });
+      if (error && error.code === '42P01') {
+        toast('Chưa tạo bảng profiles trên Supabase! Hãy chạy file supabase_schema.sql.');
+      }
     } catch (e) {}
   },
   savePassage(x) {
