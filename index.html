@@ -1,0 +1,1555 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sổ từ – học và ghi nhớ từ vựng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#F2F4F7;--surface:#FFFFFF;--surface-2:#E8ECF2;--ink:#17213B;--muted:#5A6580;--line:#D4DAE4;
+  --hl:#FFD94A;--on-hl:#17213B;--good:#2A7553;--bad:#B03A30;--hard:#956210;--easy:#2B5DA3;--focus:#2B5DA3;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1628;--surface:#172038;--surface-2:#1F2A47;--ink:#E7EBF4;--muted:#9AA4BC;--line:#2B3757;
+    --hl:#E9C64A;--on-hl:#141B30;--good:#5FC393;--bad:#EC7B70;--hard:#E0AB4F;--easy:#7FA9EC;--focus:#7FA9EC;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1628;--surface:#172038;--surface-2:#1F2A47;--ink:#E7EBF4;--muted:#9AA4BC;--line:#2B3757;
+  --hl:#E9C64A;--on-hl:#141B30;--good:#5FC393;--bad:#EC7B70;--hard:#E0AB4F;--easy:#7FA9EC;--focus:#7FA9EC;color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:780px;margin:0 auto;padding:0 20px 64px}
+header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:22px 0 10px}
+.brand{font:700 26px/1 "Fraunces",Georgia,serif;letter-spacing:-.01em;margin:0}
+.brand span{background:linear-gradient(transparent 58%,var(--hl) 58%,var(--hl) 92%,transparent 92%);color:inherit}
+.sync{font-size:13px;color:var(--muted)}
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;margin-bottom:24px}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{background:none;border:0;padding:12px 14px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.tab .count{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--hl);color:var(--on-hl);font-size:12px;font-weight:700;text-align:center}
+section[hidden]{display:none}
+h2{font:600 20px/1.3 "Be Vietnam Pro",sans-serif;margin:0 0 6px}
+p.lead{color:var(--muted);margin:0 0 18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:10px 16px;font-weight:600;font-size:15px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{opacity:.92}
+.btn.small{padding:6px 10px;font-size:14px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.icon-btn{background:none;border:1px solid transparent;border-radius:8px;padding:6px 8px;cursor:pointer;color:var(--muted);line-height:1}
+.icon-btn:hover{border-color:var(--line);color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ai-only{display:none!important}
+body.has-ai .ai-only{display:inline-flex!important}
+body.has-ai label.ai-only{display:flex!important}
+
+/* Review */
+.session-bar{display:flex;align-items:center;gap:14px;margin-bottom:14px;font-size:14px;color:var(--muted)}
+.meter{flex:1;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--ink);transition:width .3s}
+.flash{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:44px 28px 36px;text-align:center;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.kind{font-size:13px;color:var(--muted);margin-bottom:14px}
+.headword{font:700 clamp(40px,10vw,70px)/1.1 "Fraunces",Georgia,serif;letter-spacing:-.015em;margin:0 0 10px;padding:0 .08em;background:linear-gradient(transparent 60%,var(--hl) 60%,var(--hl) 90%,transparent 90%);word-break:break-word}
+.headword.vi{font:600 clamp(26px,6vw,38px)/1.3 "Be Vietnam Pro",sans-serif;background:none}
+.ipa{color:var(--muted);font-size:17px;display:flex;align-items:center;gap:8px;justify-content:center}
+.back{margin-top:26px;border-top:1px dashed var(--line);padding-top:22px;width:100%;max-width:520px}
+.meaning{font-size:22px;font-weight:600;margin:0 0 12px}
+.ex{margin:0;font-size:16px}
+.ex mark{background:none;color:inherit;font-weight:700;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:4px;text-underline-offset:2px}
+.ex-vi{margin:4px 0 0;color:var(--muted);font-size:15px}
+.show-btn{margin-top:28px}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.grade{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 6px 10px;cursor:pointer;text-align:center;border-top:4px solid var(--c)}
+.grade b{display:block;font-size:16px}
+.grade small{color:var(--muted);font-size:13px}
+.grade:hover{background:var(--surface-2)}
+.keys{margin-top:14px;font-size:13px;color:var(--muted);text-align:center}
+kbd{font:600 12px/1 "Be Vietnam Pro",sans-serif;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:2px 5px;background:var(--surface)}
+.empty{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:40px 28px;text-align:left}
+.empty h2{font:700 28px/1.2 "Fraunces",Georgia,serif;margin-bottom:8px}
+.dir{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.dir select,.field select,.field input,.field textarea,.toolbar input,.toolbar select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+
+/* Words */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input[type=search]{flex:1 1 200px;min-width:0}
+.list{border-top:1px solid var(--line)}
+.item{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) auto;gap:6px 16px;padding:14px 2px;border-bottom:1px solid var(--line);align-items:start}
+.item .w{font:600 19px/1.3 "Fraunces",Georgia,serif}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .m{font-size:15px}
+.item .actions{display:flex;gap:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-top:4px}
+.badge::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c,var(--muted))}
+.badge.new{--c:var(--easy)}.badge.learning{--c:var(--hard)}.badge.mastered{--c:var(--good)}
+.list-foot{font-size:13px;color:var(--muted);padding:12px 2px}
+@media (max-width:560px){
+  .item{grid-template-columns:minmax(0,1fr) auto}
+  .item .m{grid-column:1/-1;grid-row:2}
+  .grades{grid-template-columns:repeat(2,1fr)}
+}
+
+/* Dialog */
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100% - 24px)}
+dialog::backdrop{background:rgba(10,15,30,.45)}
+.dlg{padding:22px}
+.dlg h3{margin:0 0 14px;font-size:19px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.field input,.field textarea,.field select{color:var(--ink);font-size:16px}
+.field textarea{resize:vertical;min-height:60px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.dlg-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;margin:4px 0 12px;color:var(--ink)}
+.hint{font-size:13px;color:var(--muted);margin:-4px 0 12px}
+
+/* Practice */
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:18px}
+.mode{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}
+.mode[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.mode b{display:block;margin-bottom:2px}
+.mode span{font-size:14px;color:var(--muted)}
+.opts{display:grid;gap:10px;margin-top:22px;width:100%;max-width:520px}
+.opt{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:16px}
+.opt:hover:not(:disabled){background:var(--surface-2)}
+.opt.right{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.opt.wrong{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.opt:disabled{cursor:default}
+.answer{display:flex;gap:8px;margin-top:22px;width:100%;max-width:420px}
+.answer input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:18px;text-align:center}
+.feedback{margin-top:14px;font-weight:600;min-height:1.5em}
+.feedback.ok{color:var(--good)}.feedback.no{color:var(--bad)}
+.pattern{letter-spacing:.3em;color:var(--muted);font-size:15px;margin-top:6px}
+
+/* Progress */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);margin-bottom:24px}
+.stat{padding:16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0}
+.stat b{display:block;font:700 30px/1.1 "Fraunces",Georgia,serif}
+.stat span{font-size:14px;color:var(--muted)}
+.chart{display:flex;align-items:flex-end;gap:6px;height:150px;padding:0 2px;border-bottom:1px solid var(--line)}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:11px;color:var(--muted)}
+.bar i{display:block;width:100%;max-width:30px;background:var(--ink);border-radius:4px 4px 0 0;min-height:2px}
+.bar.today i{background:var(--hl)}
+.bar em{font-style:normal;margin-bottom:3px}
+.chart-x{display:flex;gap:6px;padding:4px 2px 0;font-size:11px;color:var(--muted)}
+.chart-x span{flex:1;text-align:center}
+.block{margin-bottom:28px}
+.hard-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.hard-list li{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid var(--line)}
+.hard-list li span{color:var(--muted);font-size:14px}
+.setting{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.setting input{width:80px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+
+.pic{width:min(220px,60vw);aspect-ratio:1;object-fit:cover;border-radius:14px;border:1px solid var(--line);background:var(--surface-2);display:block;margin:0 auto 18px}
+.back .pic{margin-top:4px}
+.thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);flex:none}
+.wcell{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.img-field{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.img-prev{width:96px;height:96px;border-radius:12px;border:1px dashed var(--line);background:var(--surface-2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;font-size:12px;color:var(--muted);text-align:center;padding:4px}
+.img-prev img{width:100%;height:100%;object-fit:cover}
+.img-actions{display:flex;flex-wrap:wrap;gap:6px}
+.grade.suggest{box-shadow:inset 0 0 0 2px var(--c)}
+.typed-res{margin:0 0 14px;font-weight:600}
+.typed-res.ok{color:var(--good)}.typed-res.no{color:var(--bad)}
+.typed-res s{color:var(--muted);font-weight:400}
+.cloze{font:500 20px/1.6 "Be Vietnam Pro",sans-serif;max-width:560px;margin:0;text-align:left}
+.blank{display:inline-block;min-width:110px;border-bottom:3px solid var(--ink);margin:0 4px}
+.plink{background:none;border:0;padding:0;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;color:inherit}
+.plink:hover .w{text-decoration:underline}
+.passage-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.passage{font:400 19px/1.8 "Fraunces",Georgia,serif;padding-bottom:180px;max-width:68ch}
+.passage p{margin:0 0 1em}
+.tok{cursor:pointer;border-radius:3px;padding:0 1px}
+.tok:hover{background:var(--surface-2)}
+.tok.known{text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:3px}
+.tok.sel{background:var(--hl);color:var(--on-hl)}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(600px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(10,15,30,.22);z-index:5}
+.sheet .sw{font:700 24px/1.2 "Fraunces",Georgia,serif}
+.sheet .ss{font-size:14px;color:var(--muted);margin:6px 0 10px}
+.pgroup{border-top:1px solid var(--line)}
+.pgroup>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 2px;cursor:pointer;list-style:none;font-weight:600}
+.pgroup>summary::-webkit-details-marker{display:none}
+.pgroup>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;margin-right:4px;flex:none}
+.pgroup[open]>summary::before{transform:rotate(45deg)}
+.pgroup>summary .gname{flex:1}
+.pgroup>summary .gmeta{font-weight:400;font-size:13px;color:var(--muted)}
+.pgroup .list{border-top:0;margin:0 0 8px 18px}
+.pgroup .item{border-bottom:0;border-top:1px dashed var(--line)}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:var(--surface-2);color:var(--muted);margin-right:6px}
+.pstat{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.pstat::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c,var(--line));border:1px solid var(--c,var(--muted))}
+.pstat.reading{--c:var(--hard)}.pstat.done{--c:var(--good)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;max-width:calc(100vw - 32px);opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand"><span>Sổ từ</span></h1>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="sync" id="sync">Lưu trên máy này</div>
+      <button class="btn small" id="authBtn" type="button">Đăng nhập</button>
+    </div>
+  </header>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="review" aria-selected="true">Ôn tập<span class="count" id="dueCount" hidden></span></button>
+    <button class="tab" role="tab" data-tab="words" aria-selected="false">Sổ từ</button>
+    <button class="tab" role="tab" data-tab="practice" aria-selected="false">Luyện tập</button>
+    <button class="tab" role="tab" data-tab="reading" aria-selected="false">Đọc</button>
+    <button class="tab" role="tab" data-tab="progress" aria-selected="false">Tiến độ</button>
+  </nav>
+
+  <section id="tab-review"></section>
+  <section id="tab-words" hidden></section>
+  <section id="tab-practice" hidden></section>
+  <section id="tab-reading" hidden></section>
+  <section id="tab-progress" hidden></section>
+</div>
+
+<dialog id="wordDlg">
+  <div class="dlg">
+    <h3 id="dlgTitle">Thêm từ</h3>
+    <div class="grid2">
+      <label class="field">Từ tiếng Anh<input id="f-word" autocomplete="off" spellcheck="false"></label>
+      <label class="field">Từ loại
+        <select id="f-pos"><option value="">–</option><option value="n">danh từ (n)</option><option value="v">động từ (v)</option><option value="adj">tính từ (adj)</option><option value="adv">trạng từ (adv)</option><option value="phrase">cụm từ</option><option value="other">khác</option></select>
+      </label>
+    </div>
+    <div class="grid2">
+      <label class="field">Phiên âm<input id="f-ipa" placeholder="/ˈekzæmpl/" spellcheck="false"></label>
+      <label class="field">Bộ từ<input id="f-tag" list="tagList" placeholder="ETS 2023 Test 1"></label>
+    </div>
+    <div class="img-field">
+      <div class="img-prev" id="imgPrev">Chưa có hình</div>
+      <div>
+        <div class="img-actions">
+          <label class="btn small" style="cursor:pointer">Chọn ảnh<input type="file" id="imgFile" accept="image/*" hidden></label>
+          <button class="btn small ai-only" type="button" id="aiDrawBtn">AI vẽ minh họa</button>
+          <button class="btn small" type="button" id="imgRemove" hidden>Bỏ hình</button>
+        </div>
+        <p class="hint" style="margin:6px 0 0">Có thể dán ảnh đã sao chép (Ctrl+V) vào hộp này.</p>
+      </div>
+    </div>
+    <label class="field">Nghĩa tiếng Việt<input id="f-meaning"></label>
+    <label class="field">Câu ví dụ<textarea id="f-example" rows="2"></textarea></label>
+    <label class="field">Dịch câu ví dụ<textarea id="f-exampleVi" rows="2"></textarea></label>
+    <div class="dlg-foot">
+      <button class="btn ai-only" id="aiFillBtn" type="button">Điền bằng AI</button>
+      <div class="row" style="margin-left:auto">
+        <button class="btn" type="button" data-close>Hủy</button>
+        <button class="btn primary" type="button" id="saveWordBtn">Lưu từ</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="passDlg">
+  <div class="dlg">
+    <h3 id="passTitle">Thêm bài đọc</h3>
+    <div class="grid2">
+      <label class="field">Tên bài<input id="p-title" placeholder="Test 1, Part 7, câu 147-148"></label>
+      <label class="field">Bộ từ<input id="p-tag" list="tagList" placeholder="ETS 2023 Test 1"></label>
+    </div>
+    <label class="field">Phần
+      <select id="p-part"><option value="">Không chọn</option><option value="Part 6">Part 6</option><option value="Part 7">Part 7</option><option value="Khác">Khác</option></select>
+    </label>
+    <label class="field">Nội dung<textarea id="p-text" rows="10" spellcheck="false" placeholder="Dán đoạn văn tiếng Anh vào đây"></textarea></label>
+    <div class="dlg-foot"><span></span>
+      <div class="row"><button class="btn" type="button" data-close>Hủy</button><button class="btn primary" type="button" id="passSaveBtn">Lưu bài đọc</button></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="bulkDlg">
+  <div class="dlg">
+    <h3>Nhập nhiều từ</h3>
+    <p class="hint">Mỗi dòng một từ. Viết nghĩa sau dấu | hoặc dấu gạch: <br><code>negotiate | đàm phán</code> &nbsp; hoặc chỉ <code>negotiate</code></p>
+    <label class="field"><textarea id="bulkText" rows="9" spellcheck="false" placeholder="invoice | hóa đơn&#10;reimburse - hoàn trả chi phí&#10;itinerary"></textarea></label>
+    <label class="field">Bộ từ<input id="bulkTag" list="tagList" placeholder="ETS 2023 Test 1"></label>
+    <label class="check ai-only"><input type="checkbox" id="bulkAI" checked> Để AI điền nghĩa, phiên âm và câu ví dụ còn thiếu</label>
+    <div class="dlg-foot">
+      <span></span>
+      <div class="row">
+        <button class="btn" type="button" data-close>Hủy</button>
+        <button class="btn primary" type="button" id="bulkSaveBtn">Nhập vào sổ</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+<dialog id="authDlg">
+  <div class="dlg">
+    <h3 id="authTitle">Tài khoản Supabase</h3>
+    <p class="lead" style="font-size:14px;margin-bottom:14px">Đăng nhập để đồng bộ dữ liệu an toàn trên Supabase Cloud.</p>
+    <div id="authUserInfo" hidden style="margin-bottom:14px;padding:12px;background:var(--surface-2);border-radius:10px">
+      <div style="font-weight:600" id="authUserEmail"></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:2px">Đang đồng bộ dữ liệu riêng tư</div>
+    </div>
+    <div id="authForm">
+      <label class="field">Email<input id="authEmail" type="email" placeholder="ten@vidu.com" autocomplete="email"></label>
+      <label class="field">Mật khẩu<input id="authPassword" type="password" placeholder="Mật khẩu tối thiểu 6 ký tự" autocomplete="current-password"></label>
+      <div class="dlg-foot" style="margin-top:14px">
+        <button class="btn" type="button" data-close>Đóng</button>
+        <div class="row" style="margin-left:auto">
+          <button class="btn" type="button" id="signUpBtn">Đăng ký</button>
+          <button class="btn primary" type="button" id="signInBtn">Đăng nhập</button>
+        </div>
+      </div>
+    </div>
+    <div id="authActions" hidden class="dlg-foot" style="margin-top:14px">
+      <button class="btn" type="button" data-close>Đóng</button>
+      <button class="btn" type="button" id="signOutBtn" style="color:var(--bad);margin-left:auto">Đăng xuất</button>
+    </div>
+  </div>
+</dialog>
+<datalist id="tagList"></datalist>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MIN = 6e4, DAY = 864e5;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const dayKey = (t = Date.now()) => { const d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const startOfDay = t => { const d = new Date(t); d.setHours(0,0,0,0); return d.getTime(); };
+const uid = () => 'w-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const norm = s => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ');
+const POS = {n:'n', v:'v', adj:'adj', adv:'adv', phrase:'cụm từ', other:''};
+
+let toastTimer;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2800); }
+
+function speak(text) {
+  try { if (!('speechSynthesis' in window)) return; const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = .9; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {}
+}
+
+/* ---------- State & storage ---------- */
+const defaultMeta = () => ({ newPerDay: 15, log: {}, newLog: {} });
+const state = { words: {}, passages: {}, meta: defaultMeta() };
+const LS = 'so-tu.v1';
+
+const SUPABASE_URL = 'https://dqbhginmdwkvckyyzlkv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_K6Eh9iJPx4NvCUEj4VUMVw_KFQgFHwC';
+let sb = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+} catch (e) {
+  console.warn('Init supabase failed:', e);
+}
+
+let currentUser = null;
+
+const Store = {
+  mode: 'local',
+  loadLocal() {
+    try {
+      const raw = localStorage.getItem(LS);
+      if (raw) {
+        const o = JSON.parse(raw);
+        state.words = o.words || {};
+        state.passages = o.passages || {};
+        state.meta = Object.assign(defaultMeta(), o.meta || {});
+      }
+    } catch (e) {}
+  },
+  saveLocal() {
+    try {
+      localStorage.setItem(LS, JSON.stringify(state));
+    } catch (e) {
+      if (!this.warned) {
+        this.warned = true;
+        toast('Bộ nhớ trình duyệt đầy, hãy dùng ảnh nhẹ hơn.');
+      }
+    }
+  },
+  async connect() {
+    if (!sb) return;
+    try {
+      const { data: { session: sess } } = await sb.auth.getSession();
+      if (sess && sess.user) {
+        currentUser = sess.user;
+        await this.sync();
+      }
+      sb.auth.onAuthStateChange(async (evt, sess) => {
+        if (sess && sess.user) {
+          currentUser = sess.user;
+          await this.sync();
+        } else {
+          currentUser = null;
+          this.mode = 'local';
+          setSync();
+        }
+      });
+    } catch (e) {
+      console.warn('Supabase connect error:', e);
+    }
+  },
+  async sync() {
+    if (!currentUser || !sb) return;
+    this.mode = 'cloud';
+    setSync('Đang đồng bộ…');
+    try {
+      const [wRes, pRes, profRes] = await Promise.all([
+        sb.from('words').select('*'),
+        sb.from('passages').select('*'),
+        sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle()
+      ]);
+
+      if (wRes.data) {
+        const rMap = {};
+        wRes.data.forEach(w => {
+          rMap[w.id] = {
+            id: w.id,
+            word: w.word,
+            pos: w.pos || '',
+            ipa: w.ipa || '',
+            meaning: w.meaning || '',
+            example: w.example || '',
+            exampleVi: w.example_vi || '',
+            tag: w.tag || '',
+            img: w.img || '',
+            reps: w.reps || 0,
+            interval: w.interval || 0,
+            ease: Number(w.ease) || 2.5,
+            lapses: w.lapses || 0,
+            due: Number(w.due) || 0,
+            last: Number(w.last) || 0,
+            created: Number(w.created) || Date.now()
+          };
+        });
+        const localList = Object.values(state.words);
+        state.words = Object.assign({}, rMap, state.words);
+        for (const lw of localList) {
+          if (!rMap[lw.id]) await this.pushWord(lw);
+        }
+      }
+
+      if (pRes.data) {
+        const pMap = {};
+        pRes.data.forEach(p => {
+          pMap[p.id] = {
+            id: p.id,
+            title: p.title || '',
+            part: p.part || '',
+            tag: p.tag || '',
+            status: p.status || 'new',
+            text: p.text || '',
+            created: Number(p.created) || Date.now()
+          };
+        });
+        const localPList = Object.values(state.passages);
+        state.passages = Object.assign({}, pMap, state.passages);
+        for (const lp of localPList) {
+          if (!pMap[lp.id]) await this.pushPassage(lp);
+        }
+      }
+
+      if (profRes.data) {
+        state.meta.newPerDay = profRes.data.new_per_day || state.meta.newPerDay || 15;
+        state.meta.log = Object.assign({}, profRes.data.log || {}, state.meta.log || {});
+        state.meta.newLog = Object.assign({}, profRes.data.new_log || {}, state.meta.newLog || {});
+      } else {
+        await this.saveMeta();
+      }
+
+      this.saveLocal();
+      session = null;
+      renderAll();
+      setSync();
+    } catch (err) {
+      console.warn('Sync failed:', err);
+      setSync();
+    }
+  },
+  async pushWord(w) {
+    if (!currentUser || !sb) return;
+    try {
+      await sb.from('words').upsert({
+        id: w.id,
+        user_id: currentUser.id,
+        word: w.word,
+        pos: w.pos || '',
+        ipa: w.ipa || '',
+        meaning: w.meaning || '',
+        example: w.example || '',
+        example_vi: w.exampleVi || '',
+        tag: w.tag || '',
+        img: w.img || '',
+        reps: w.reps || 0,
+        interval: w.interval || 0,
+        ease: w.ease || 2.5,
+        lapses: w.lapses || 0,
+        due: w.due || 0,
+        last: w.last || 0,
+        created: w.created || Date.now()
+      });
+    } catch (e) { console.warn('pushWord error:', e); }
+  },
+  async deleteWord(id) {
+    if (!currentUser || !sb) return;
+    try { await sb.from('words').delete().eq('id', id); } catch (e) {}
+  },
+  async pushPassage(p) {
+    if (!currentUser || !sb) return;
+    try {
+      await sb.from('passages').upsert({
+        id: p.id,
+        user_id: currentUser.id,
+        title: p.title || '',
+        part: p.part || '',
+        tag: p.tag || '',
+        status: p.status || 'new',
+        text: p.text || '',
+        created: p.created || Date.now()
+      });
+    } catch (e) { console.warn('pushPassage error:', e); }
+  },
+  async deletePassage(id) {
+    if (!currentUser || !sb) return;
+    try { await sb.from('passages').delete().eq('id', id); } catch (e) {}
+  },
+  saveWord(w) {
+    state.words[w.id] = w;
+    this.saveLocal();
+    this.pushWord(w);
+  },
+  removeWord(id) {
+    delete state.words[id];
+    this.saveLocal();
+    this.deleteWord(id);
+  },
+  async saveMeta() {
+    this.saveLocal();
+    if (!currentUser || !sb) return;
+    try {
+      await sb.from('profiles').upsert({
+        id: currentUser.id,
+        email: currentUser.email,
+        new_per_day: state.meta.newPerDay,
+        log: state.meta.log,
+        new_log: state.meta.newLog,
+        updated_at: new Date().toISOString()
+      });
+    } catch (e) {}
+  },
+  savePassage(x) {
+    state.passages[x.id] = x;
+    this.saveLocal();
+    this.pushPassage(x);
+  },
+  removePassage(id) {
+    delete state.passages[id];
+    this.saveLocal();
+    this.deletePassage(id);
+  }
+};
+
+function setSync(msg) {
+  const el = $('#sync');
+  const btn = $('#authBtn');
+  if (msg) {
+    el.textContent = msg;
+    return;
+  }
+  if (!currentUser) {
+    el.textContent = 'Lưu trên máy này';
+    if (btn) btn.textContent = 'Đăng nhập';
+  } else {
+    el.textContent = 'Đã kết nối Supabase';
+    if (btn) btn.textContent = currentUser.email ? currentUser.email.split('@')[0] : 'Tài khoản';
+  }
+}
+
+/* ---------- AI (optional) ---------- */
+let sampleFn = null;
+async function initAI() {
+  if (!window.claude || typeof window.claude.use !== 'function') return;
+  try { sampleFn = await claude.use('sample'); } catch (e) { sampleFn = null; }
+  if (sampleFn) document.body.classList.add('has-ai');
+}
+let assetsFn = null;
+async function initAssets() {
+  if (!window.claude || typeof window.claude.use !== 'function') return;
+  try { assetsFn = await claude.use('assets'); } catch (e) { assetsFn = null; }
+}
+
+/* ---------- Images ---------- */
+function imgSrc(w) {
+  const v = w && w.img; if (!v) return '';
+  if (v.startsWith('data:') || v.startsWith('http://') || v.startsWith('https://')) return v;
+  if (/^[0-9a-f]{32}$/.test(v)) return '/_blob/' + v;
+  return '';
+}
+function blobToDataUrl(b) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(b); }); }
+async function shrinkImage(file, max = 360) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+    return await new Promise(res => c.toBlob(res, 'image/jpeg', .78));
+  } finally { URL.revokeObjectURL(url); }
+}
+function cleanSvg(svg) {
+  if (typeof svg !== 'string') return '';
+  svg = svg.trim().replace(/^```(?:svg|xml)?\s*|```$/g, '').trim();
+  if (!/^<svg[\s>]/i.test(svg) || !/<\/svg>\s*$/i.test(svg) || svg.length > 30000) return '';
+  svg = svg.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, '').replace(/\son\w+\s*=\s*("[^"]*"|'[^']*')/gi, '').replace(/(href\s*=\s*["'])\s*(javascript|https?):[^"']*/gi, '$1#');
+  if (!/xmlns=/.test(svg)) svg = svg.replace(/^<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+  return svg;
+}
+async function aiDraw(w) {
+  const prompt = 'Vẽ một hình minh họa đơn giản, dễ nhớ để giúp người Việt học từ tiếng Anh "' + w.word + '"' + (w.meaning ? ' (nghĩa: ' + w.meaning + ')' : '') +
+    (w.example ? '. Ngữ cảnh: ' + w.example : '') + '. Yêu cầu: một file SVG viewBox="0 0 200 200", phong cách phẳng, màu tươi dễ nhìn, có nền màu nhạt phủ kín khung, ' +
+    'tối đa 30 phần tử hình (rect, circle, ellipse, path, polygon, line), chỉ dùng thuộc tính fill/stroke/stroke-width, không dùng <style>, <script>, <text>, không có chữ hay số. ' +
+    'Hình phải thể hiện rõ ý nghĩa của từ, như một biểu tượng trong sách học từ vựng. Trả về JSON {"svg": "<svg ...>...</svg>"} và không gì khác.';
+  try {
+    const r = await sampleFn.json(prompt, { modelTier: 'default' });
+    const svg = cleanSvg(r && r.svg);
+    if (!svg) { toast('AI chưa vẽ được hình hợp lệ, thử lại nhé.'); return null; }
+    return new Blob([svg], { type: 'image/svg+xml' });
+  } catch (e) {
+    if (e && e.code === 'not_granted') { sampleFn = null; document.body.classList.remove('has-ai'); toast('AI chưa được cho phép trên trang này.'); }
+    else if (e && e.code === 'rate_limited') toast('AI đang quá tải, thử lại sau ít phút.');
+    else toast('AI không vẽ được lúc này.');
+    return null;
+  }
+}
+async function storeImage(blob) {
+  if (currentUser && sb) {
+    try {
+      const fileName = `${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}.jpg`;
+      const { data, error } = await sb.storage.from('word-images').upload(fileName, blob, {
+        contentType: blob.type || 'image/jpeg',
+        upsert: true
+      });
+      if (!error && data) {
+        const { data: pubData } = sb.storage.from('word-images').getPublicUrl(fileName);
+        if (pubData && pubData.publicUrl) return pubData.publicUrl;
+      }
+    } catch (e) {
+      console.warn('Storage upload error:', e);
+    }
+  }
+  if (assetsFn) {
+    try { const r = await assetsFn.upload(blob, { type: blob.type }); return r.id; }
+    catch (e) { console.warn('asset', e); }
+  }
+  return await blobToDataUrl(blob);
+}
+function dropImage(v) {
+  if (assetsFn && v && /^[0-9a-f]{32}$/.test(v)) assetsFn.delete(v).catch(() => {});
+}
+async function aiFill(list) {
+  const out = [];
+  for (let i = 0; i < list.length; i += 15) {
+    const chunk = list.slice(i, i + 15);
+    const prompt = 'Bạn là trợ lý từ vựng TOEIC cho người Việt. Với mỗi từ hoặc cụm từ tiếng Anh trong danh sách, trả về một JSON array. Mỗi phần tử là object: ' +
+      '{"word": giữ nguyên từ đã cho, "ipa": phiên âm IPA giọng Mỹ đặt trong dấu /, "pos": một trong "n","v","adj","adv","phrase","other", ' +
+      '"meaning": nghĩa tiếng Việt ngắn gọn thường gặp trong TOEIC (tối đa 2 nghĩa, ngăn bằng "; "), "example": một câu ví dụ tiếng Anh trong ngữ cảnh công sở, dưới 18 từ, có chứa từ đó, ' +
+      '"exampleVi": bản dịch tiếng Việt tự nhiên của câu ví dụ}. Chỉ trả về JSON array, không thêm giải thích.\nDanh sách: ' + JSON.stringify(chunk);
+    try {
+      const res = await sampleFn.json(prompt, { modelTier: 'quick' });
+      if (Array.isArray(res)) out.push(...res);
+    } catch (e) {
+      if (e && e.code === 'not_granted') { sampleFn = null; document.body.classList.remove('has-ai'); toast('AI chưa được cho phép trên trang này.'); }
+      else if (e && e.code === 'rate_limited') toast('AI đang quá tải, thử lại sau ít phút.');
+      else toast('AI không trả lời được lúc này.');
+      break;
+    }
+  }
+  return out;
+}
+
+/* ---------- Spaced repetition ---------- */
+const isNew = w => !w.reps && !w.last;
+const statusOf = w => isNew(w) ? 'new' : (w.interval >= 21 ? 'mastered' : 'learning');
+const STATUS_VI = { new: 'Mới', learning: 'Đang học', mastered: 'Đã thuộc' };
+function schedule(w, g) {
+  let ease = w.ease || 2.5, iv = w.interval || 0; const reps = w.reps || 0;
+  if (g === 0) return { interval: 0, due: Date.now() + 10 * MIN, ease: Math.max(1.3, ease - .2), reps: 0, lapses: (w.lapses || 0) + 1 };
+  if (g === 1) { iv = reps === 0 ? 1 : Math.max(1, Math.round(iv * 1.2)); ease = Math.max(1.3, ease - .15); }
+  if (g === 2) { iv = reps === 0 ? 1 : reps === 1 ? 3 : Math.max(iv + 1, Math.round(iv * ease)); }
+  if (g === 3) { iv = reps === 0 ? 4 : Math.max(iv + 2, Math.round(iv * ease * 1.3)); ease += .15; }
+  return { interval: iv, due: startOfDay(Date.now() + iv * DAY), ease, reps: reps + 1, lapses: w.lapses || 0 };
+}
+function ivLabel(iv) {
+  if (iv === 0) return '10 phút';
+  if (iv < 30) return iv + ' ngày';
+  if (iv < 365) return Math.round(iv / 30 * 10) / 10 + ' tháng';
+  return Math.round(iv / 365 * 10) / 10 + ' năm';
+}
+function dueLabel(w) {
+  if (isNew(w)) return 'chưa học';
+  const d = w.due - Date.now();
+  if (d <= 0) return 'cần ôn';
+  if (d < DAY && dayKey(w.due) === dayKey()) return 'ôn lại hôm nay';
+  return 'ôn sau ' + Math.max(1, Math.round((startOfDay(w.due) - startOfDay(Date.now())) / DAY)) + ' ngày';
+}
+function dueWords() { const now = Date.now(); return Object.values(state.words).filter(w => !isNew(w) && w.due <= now).sort((a, b) => a.due - b.due); }
+function newRoom() { return Math.max(0, (state.meta.newPerDay || 15) - (state.meta.newLog[dayKey()] || 0)); }
+function freshWords() { return Object.values(state.words).filter(isNew).sort((a, b) => (a.created || 0) - (b.created || 0)).slice(0, newRoom()); }
+function logReview() { const k = dayKey(); state.meta.log[k] = (state.meta.log[k] || 0) + 1; }
+
+/* ---------- Tabs ---------- */
+let current = 'review';
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => go(b.dataset.tab)));
+function go(tab) {
+  current = tab;
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+  document.querySelectorAll('main section, .wrap > section').forEach(s => s.hidden = s.id !== 'tab-' + tab);
+  if (tab === 'review' && (!session || !session.queue.length)) session = null;
+  renderTab(tab);
+}
+function renderAll() { renderTab(current); updateBadge(); updateTags(); }
+function renderTab(t) {
+  updateBadge();
+  if (t === 'review') renderReview();
+  else if (t === 'words') renderWords();
+  else if (t === 'practice') renderPractice();
+  else if (t === 'reading') renderReading();
+  else renderProgress();
+}
+function updateBadge() { const n = dueWords().length + freshWords().length; const el = $('#dueCount'); el.hidden = !n; el.textContent = n; }
+function tags() { return [...new Set([...Object.values(state.words), ...Object.values(state.passages)].map(w => w.tag).filter(Boolean))].sort(); }
+function updateTags() { $('#tagList').innerHTML = tags().map(t => `<option value="${esc(t)}">`).join(''); }
+
+/* ---------- Review ---------- */
+let session = null;
+let dir = 'en';
+function startSession() {
+  const due = dueWords(), fresh = freshWords();
+  session = { queue: [...due.map(w => w.id), ...fresh.map(w => w.id)], total: due.length + fresh.length, done: 0, flipped: false, again: 0 };
+}
+function exampleHtml(w) {
+  if (!w.example) return '';
+  const base = w.word.trim();
+  let html = esc(w.example);
+  if (base && !/\s/.test(base)) {
+    const re = new RegExp('\\b(' + base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').slice(0, Math.max(3, base.length - 2)) + '[a-z]*)', 'i');
+    html = html.replace(re, '<mark>$1</mark>');
+  } else if (base) {
+    const i = html.toLowerCase().indexOf(esc(base).toLowerCase());
+    if (i >= 0) html = html.slice(0, i) + '<mark>' + html.slice(i, i + esc(base).length) + '</mark>' + html.slice(i + esc(base).length);
+  }
+  return `<p class="ex">${html}</p>${w.exampleVi ? `<p class="ex-vi">${esc(w.exampleVi)}</p>` : ''}`;
+}
+function renderReview() {
+  const el = $('#tab-review');
+  const total = Object.keys(state.words).length;
+  if (!total) {
+    el.innerHTML = `<div class="empty"><h2>Sổ từ đang trống</h2><p class="lead">Thêm từ bạn gặp trong đề, hoặc bắt đầu ngay với 30 từ TOEIC thông dụng rồi thay dần bằng từ của bạn.</p>
+      <div class="row"><button class="btn primary" data-act="add">Thêm từ đầu tiên</button><button class="btn" data-act="bulk">Nhập nhiều từ</button><button class="btn" data-act="seed">Dùng 30 từ TOEIC mẫu</button></div></div>`;
+    return;
+  }
+  if (!session) startSession();
+  if (!session.queue.length) {
+    const upcoming = Object.values(state.words).filter(w => !isNew(w)).sort((a, b) => a.due - b.due)[0];
+    const leftNew = Object.values(state.words).filter(isNew).length;
+    const msg = session.done ? `Bạn vừa ôn ${session.done} lượt thẻ.` : 'Không còn thẻ nào cần ôn lúc này.';
+    let next = '';
+    if (upcoming) next = upcoming.due - Date.now() < DAY && dayKey(upcoming.due) === dayKey() ? 'Thẻ tiếp theo sẽ đến hạn trong ít phút nữa.' : 'Thẻ tiếp theo đến hạn ' + dueLabel(upcoming).replace('ôn ', '') + '.';
+    el.innerHTML = `<div class="empty"><h2>Xong phần hôm nay</h2><p class="lead">${msg} ${next}${leftNew && !newRoom() ? ` Còn ${leftNew} từ mới, sẽ mở thêm vào ngày mai.` : ''}</p>
+      <div class="row"><button class="btn primary" data-act="topractice">Luyện thêm</button>${leftNew && !newRoom() ? '<button class="btn" data-act="morenew">Học thêm 10 từ mới hôm nay</button>' : ''}<button class="btn" data-act="add">Thêm từ</button></div></div>`;
+    return;
+  }
+  const w = state.words[session.queue[0]];
+  if (!w) { session.queue.shift(); return renderReview(); }
+  const pct = session.total ? Math.round(session.done / (session.total + session.again) * 100) : 0;
+  const left = session.queue.length;
+  const front = dir === 'en'
+    ? `<p class="headword">${esc(w.word)}</p><div class="ipa">${w.ipa ? esc(w.ipa) : ''}${w.pos && POS[w.pos] ? ` <span>(${esc(POS[w.pos])})</span>` : ''}<button class="icon-btn" data-act="speak" aria-label="Nghe phát âm">🔊</button></div>`
+    : `${imgSrc(w) ? `<img class="pic" src="${esc(imgSrc(w))}" alt="Hình minh họa">` : ''}<p class="headword vi">${esc(w.meaning || '(chưa có nghĩa)')}</p><div class="ipa">${w.pos && POS[w.pos] ? `(${esc(POS[w.pos])})` : ''}</div>`;
+  const pic = imgSrc(w) ? `<img class="pic" src="${esc(imgSrc(w))}" alt="Hình minh họa cho từ">` : '';
+  const backTop = dir === 'en'
+    ? `${pic}<p class="meaning">${esc(w.meaning || '(chưa có nghĩa)')}</p>`
+    : `<p class="headword" style="font-size:clamp(34px,8vw,52px)">${esc(w.word)}</p><div class="ipa" style="margin-bottom:14px">${esc(w.ipa || '')}<button class="icon-btn" data-act="speak" aria-label="Nghe phát âm">🔊</button></div>`;
+  const grades = [[0,'Quên','var(--bad)'],[1,'Khó','var(--hard)'],[2,'Nhớ','var(--good)'],[3,'Dễ','var(--easy)']]
+    .map(([g, l, c]) => `<button class="grade${session.typed && ((session.typed.ok && g === 2) || (!session.typed.ok && g === 0)) ? ' suggest' : ''}" style="--c:${c}" data-grade="${g}"><b>${l}</b><small>${ivLabel(schedule(w, g).interval)}</small></button>`).join('');
+  const typedRes = session.typed ? `<p class="typed-res ${session.typed.ok ? 'ok' : 'no'}">${session.typed.ok ? 'Bạn gõ đúng.' : session.typed.val ? `Bạn gõ: <s>${esc(session.typed.val)}</s>` : 'Bạn chọn không nhớ.'}</p>` : '';
+  const typeForm = `<div class="answer"><input id="revAns" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Gõ từ tiếng Anh"><button class="btn primary" data-act="checktyped">Kiểm tra</button></div><div class="row" style="margin-top:10px"><button class="btn small" data-act="nomem">Không nhớ</button></div>`;
+  el.innerHTML = `
+    <div class="session-bar"><span>Còn ${left} thẻ</span><div class="meter"><i style="width:${pct}%"></i></div>
+      <label class="dir">Chiều <select id="dirSel"><option value="en"${dir==='en'?' selected':''}>Anh → Việt</option><option value="vi"${dir==='vi'?' selected':''}>Việt → Anh</option><option value="type"${dir==='type'?' selected':''}>Gõ từ (Việt → Anh)</option></select></label></div>
+    <div class="flash">
+      <div class="kind">${isNew(w) ? 'Từ mới' : 'Ôn lại'}${w.tag ? ' trong ' + esc(w.tag) : ''}</div>
+      ${front}
+      ${session.flipped ? `<div class="back">${typedRes}${backTop}${exampleHtml(w)}</div>` : dir === 'type' ? typeForm : `<button class="btn primary show-btn" data-act="flip">Hiện nghĩa</button>`}
+    </div>
+    ${session.flipped ? `<div class="grades">${grades}</div><p class="keys">Phím tắt: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> để chấm</p>` : dir === 'type' ? `<p class="keys">Gõ từ rồi nhấn <kbd>Enter</kbd> để kiểm tra</p>` : `<p class="keys">Nhấn <kbd>Space</kbd> để lật thẻ</p>`}`;
+  $('#dirSel').addEventListener('change', e => { dir = e.target.value; session.typed = null; renderReview(); });
+  const ra = $('#revAns');
+  if (ra) { ra.focus(); ra.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkReviewTyped(false); } }); }
+  if (dir === 'en' && !session.flipped && session.autoSpoke !== w.id) { session.autoSpoke = w.id; }
+}
+function flip() { if (!session || !session.queue.length) return; session.flipped = true; renderReview(); if (dir !== 'en') speak(state.words[session.queue[0]].word); }
+function checkReviewTyped(skip) {
+  if (!session || !session.queue.length || session.flipped) return;
+  const w = state.words[session.queue[0]]; const val = skip ? '' : ($('#revAns') ? $('#revAns').value.trim() : '');
+  if (!skip && !val) return;
+  session.typed = { val, ok: !!val && norm(val) === norm(w.word) };
+  flip();
+}
+function grade(g) {
+  if (!session || !session.flipped) return;
+  const id = session.queue.shift(); const w = state.words[id]; if (!w) return;
+  const wasNew = isNew(w);
+  Object.assign(w, schedule(w, g), { last: Date.now() });
+  if (wasNew) { const k = dayKey(); state.meta.newLog[k] = (state.meta.newLog[k] || 0) + 1; }
+  logReview();
+  session.done++; session.flipped = false; session.typed = null;
+  if (g === 0) { session.queue.splice(Math.min(3, session.queue.length), 0, id); session.again++; }
+  Store.saveWord(w); Store.saveMeta();
+  renderReview(); updateBadge();
+}
+
+/* ---------- Words ---------- */
+let filter = { q: '', tag: '', status: '' };
+function renderWords() {
+  const el = $('#tab-words');
+  const all = Object.values(state.words);
+  const q = norm(filter.q);
+  let list = all.filter(w => (!filter.tag || w.tag === filter.tag) && (!filter.status || statusOf(w) === filter.status) && (!q || norm(w.word).includes(q) || norm(w.meaning).includes(q)));
+  list.sort((a, b) => (b.created || 0) - (a.created || 0));
+  const tagOpts = tags().map(t => `<option value="${esc(t)}"${filter.tag === t ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  const noPic = list.filter(w => !w.img).length;
+  const searching = document.activeElement && document.activeElement.id === 'searchBox';
+  el.innerHTML = `
+    <div class="toolbar">
+      <input type="search" id="searchBox" placeholder="Tìm từ hoặc nghĩa" value="${esc(filter.q)}" aria-label="Tìm từ">
+      <select id="tagFilter" aria-label="Lọc theo bộ từ"><option value="">Tất cả bộ từ</option>${tagOpts}</select>
+      <select id="statusFilter" aria-label="Lọc theo trạng thái"><option value="">Mọi trạng thái</option>${['new','learning','mastered'].map(s => `<option value="${s}"${filter.status===s?' selected':''}>${STATUS_VI[s]}</option>`).join('')}</select>
+    </div>
+    <div class="row" style="margin-bottom:16px"><button class="btn primary" data-act="add">Thêm từ</button><button class="btn" data-act="bulk">Nhập nhiều từ</button>${all.length ? '' : '<button class="btn" data-act="seed">Dùng 30 từ TOEIC mẫu</button>'}${noPic ? `<button class="btn ai-only" data-act="drawall">AI vẽ hình cho ${Math.min(10, noPic)} từ chưa có hình</button>` : ''}</div>
+    ${list.length ? `<div class="list">${list.map(w => `
+      <div class="item">
+        <div class="wcell">${imgSrc(w) ? `<img class="thumb" src="${esc(imgSrc(w))}" alt="" loading="lazy">` : ''}<div><div class="w">${esc(w.word)}</div><div class="meta">${w.pos && POS[w.pos] ? esc(POS[w.pos]) + ' ' : ''}${esc(w.ipa || '')}</div><span class="badge ${statusOf(w)}">${STATUS_VI[statusOf(w)]}, ${dueLabel(w)}</span></div></div>
+        <div class="m">${esc(w.meaning || '')}${w.tag ? `<div class="meta">${esc(w.tag)}</div>` : ''}</div>
+        <div class="actions"><button class="icon-btn" data-act="speakw" data-id="${w.id}" aria-label="Nghe ${esc(w.word)}">🔊</button><button class="icon-btn" data-act="edit" data-id="${w.id}" aria-label="Sửa ${esc(w.word)}">✎</button><button class="icon-btn" data-act="del" data-id="${w.id}" aria-label="Xóa ${esc(w.word)}">✕</button></div>
+      </div>`).join('')}</div><div class="list-foot">${list.length} / ${all.length} từ</div>`
+      : `<p class="lead">${all.length ? 'Không có từ nào khớp bộ lọc.' : 'Chưa có từ nào. Thêm từ bạn gặp khi làm đề để bắt đầu ôn.'}</p>`}`;
+  const sb = $('#searchBox');
+  sb.addEventListener('input', e => { filter.q = e.target.value; renderWords(); });
+  if (searching) { sb.focus(); sb.setSelectionRange(sb.value.length, sb.value.length); }
+  $('#tagFilter').addEventListener('change', e => { filter.tag = e.target.value; renderWords(); });
+  $('#statusFilter').addEventListener('change', e => { filter.status = e.target.value; renderWords(); });
+}
+
+let editingId = null;
+let pendingImg = null;
+let previewUrl = null;
+const F = ['word','pos','ipa','tag','meaning','example','exampleVi'];
+function showPreview(src) {
+  const box = $('#imgPrev');
+  if (src) box.innerHTML = `<img src="${esc(src)}" alt="">`; else box.textContent = 'Chưa có hình';
+  $('#imgRemove').hidden = !src;
+}
+function setPending(blob) {
+  pendingImg = blob;
+  if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+  if (blob instanceof Blob) { previewUrl = URL.createObjectURL(blob); showPreview(previewUrl); }
+  else showPreview('');
+}
+async function takeFile(file) {
+  if (!file || !/^image\//.test(file.type)) return;
+  try { setPending(await shrinkImage(file)); } catch (e) { toast('Không đọc được ảnh này.'); }
+}
+$('#imgFile').addEventListener('change', e => { takeFile(e.target.files[0]); e.target.value = ''; });
+$('#imgRemove').addEventListener('click', () => setPending('remove'));
+$('#wordDlg').addEventListener('paste', e => {
+  const item = [...(e.clipboardData ? e.clipboardData.items : [])].find(i => i.type.startsWith('image/'));
+  if (item) { e.preventDefault(); takeFile(item.getAsFile()); }
+});
+$('#aiDrawBtn').addEventListener('click', async e => {
+  const word = $('#f-word').value.trim();
+  if (!word) { toast('Nhập từ tiếng Anh trước.'); return; }
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'AI đang vẽ…';
+  const blob = await aiDraw({ word, meaning: $('#f-meaning').value.trim(), example: $('#f-example').value.trim() });
+  btn.disabled = false; btn.textContent = 'AI vẽ minh họa';
+  if (blob) setPending(blob);
+});
+function openEditor(id, pre) {
+  editingId = id || null;
+  const w = id ? state.words[id] : Object.assign({ tag: filter.tag || '' }, pre || {});
+  $('#dlgTitle').textContent = id ? 'Sửa từ' : 'Thêm từ';
+  F.forEach(k => $('#f-' + k).value = w[k] || '');
+  pendingImg = null; if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+  showPreview(imgSrc(w));
+  $('#wordDlg').showModal();
+  setTimeout(() => $('#f-word').focus(), 30);
+}
+$('#saveWordBtn').addEventListener('click', async e => {
+  const data = {}; F.forEach(k => data[k] = $('#f-' + k).value.trim());
+  if (!data.word) { toast('Nhập từ tiếng Anh trước khi lưu.'); $('#f-word').focus(); return; }
+  if (!editingId && Object.values(state.words).some(w => norm(w.word) === norm(data.word))) { toast(`"${data.word}" đã có trong sổ.`); return; }
+  const old = editingId ? state.words[editingId].img : '';
+  if (pendingImg === 'remove') { data.img = ''; dropImage(old); }
+  else if (pendingImg instanceof Blob) {
+    const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang lưu hình…';
+    data.img = await storeImage(pendingImg);
+    btn.disabled = false; btn.textContent = 'Lưu từ';
+    dropImage(old);
+  }
+  pendingImg = null;
+  const w = editingId ? Object.assign(state.words[editingId], data) : Object.assign({ id: uid(), created: Date.now(), reps: 0, interval: 0, ease: 2.5, lapses: 0, due: 0 }, data);
+  Store.saveWord(w);
+  $('#wordDlg').close();
+  toast(editingId ? 'Đã lưu thay đổi.' : `Đã thêm "${w.word}".`);
+  session = null; renderAll();
+});
+$('#aiFillBtn').addEventListener('click', async e => {
+  const word = $('#f-word').value.trim();
+  if (!word) { toast('Nhập từ tiếng Anh trước.'); return; }
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang điền…';
+  const [r] = await aiFill([word]);
+  btn.disabled = false; btn.textContent = 'Điền bằng AI';
+  if (!r) return;
+  ['ipa','pos','meaning','example','exampleVi'].forEach(k => { if (!$('#f-' + k).value.trim() && r[k]) $('#f-' + k).value = r[k]; });
+  if (r.pos && !POS.hasOwnProperty(r.pos)) $('#f-pos').value = 'other';
+});
+$('#f-word').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#f-meaning').focus(); } });
+
+function openBulk() { $('#bulkText').value = ''; $('#bulkTag').value = filter.tag || ''; $('#bulkDlg').showModal(); }
+$('#bulkSaveBtn').addEventListener('click', async e => {
+  const tag = $('#bulkTag').value.trim();
+  const lines = $('#bulkText').value.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) { toast('Dán danh sách từ vào ô trước.'); return; }
+  const existing = new Set(Object.values(state.words).map(w => norm(w.word)));
+  const items = []; let skipped = 0;
+  for (const line of lines) {
+    const m = line.match(/^(.+?)\s*(?:\||\t|\s[-–—:]\s)\s*(.*)$/);
+    const word = (m ? m[1] : line).trim(), meaning = (m ? m[2] : '').trim();
+    if (!word || existing.has(norm(word))) { skipped++; continue; }
+    existing.add(norm(word)); items.push({ word, meaning });
+  }
+  if (!items.length) { toast('Các từ này đã có sẵn trong sổ.'); return; }
+  const btn = e.currentTarget; btn.disabled = true;
+  if (sampleFn && $('#bulkAI').checked) {
+    btn.textContent = 'AI đang điền…';
+    const res = await aiFill(items.map(i => i.word));
+    const byWord = {}; res.forEach(r => { if (r && r.word) byWord[norm(r.word)] = r; });
+    items.forEach(i => { const r = byWord[norm(i.word)]; if (r) { i.ipa = r.ipa || ''; i.pos = POS.hasOwnProperty(r.pos) ? r.pos : ''; i.example = r.example || ''; i.exampleVi = r.exampleVi || ''; if (!i.meaning) i.meaning = r.meaning || ''; } });
+  }
+  const now = Date.now();
+  items.forEach((i, n) => Store.saveWord(Object.assign({ id: uid() + n, created: now + n, reps: 0, interval: 0, ease: 2.5, lapses: 0, due: 0, ipa: '', pos: '', example: '', exampleVi: '', tag }, i)));
+  btn.disabled = false; btn.textContent = 'Nhập vào sổ';
+  $('#bulkDlg').close();
+  toast(`Đã nhập ${items.length} từ${skipped ? `, bỏ qua ${skipped} từ trùng` : ''}.`);
+  session = null; renderAll();
+});
+document.querySelectorAll('dialog [data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+
+const SEED = [
+['negotiate','/nɪˈɡoʊʃieɪt/','v','đàm phán, thương lượng','Our team will negotiate the price with the supplier next week.','Nhóm chúng tôi sẽ đàm phán giá với nhà cung cấp vào tuần sau.'],
+['invoice','/ˈɪnvɔɪs/','n','hóa đơn','Please send the invoice to the accounting department.','Vui lòng gửi hóa đơn cho phòng kế toán.'],
+['reimburse','/ˌriːɪmˈbɜːrs/','v','hoàn trả (chi phí)','The company will reimburse your travel expenses.','Công ty sẽ hoàn trả chi phí đi lại cho bạn.'],
+['itinerary','/aɪˈtɪnəreri/','n','lịch trình chuyến đi','Your itinerary includes two nights in Singapore.','Lịch trình của bạn gồm hai đêm ở Singapore.'],
+['deadline','/ˈdedlaɪn/','n','hạn chót','The deadline for the report is Friday at noon.','Hạn chót nộp báo cáo là trưa thứ Sáu.'],
+['revenue','/ˈrevənuː/','n','doanh thu','Revenue increased by 12 percent this quarter.','Doanh thu tăng 12 phần trăm trong quý này.'],
+['inventory','/ˈɪnvəntɔːri/','n','hàng tồn kho; việc kiểm kê','We check the inventory at the end of each month.','Chúng tôi kiểm kê hàng tồn kho vào cuối mỗi tháng.'],
+['warranty','/ˈwɔːrənti/','n','sự bảo hành','The printer comes with a two-year warranty.','Máy in được bảo hành hai năm.'],
+['applicant','/ˈæplɪkənt/','n','người nộp đơn, ứng viên','Each applicant must submit a resume by email.','Mỗi ứng viên phải nộp sơ yếu lý lịch qua email.'],
+['headquarters','/ˈhedkwɔːrtərz/','n','trụ sở chính','The company headquarters is located in Seoul.','Trụ sở chính của công ty đặt tại Seoul.'],
+['postpone','/poʊstˈpoʊn/','v','hoãn lại','The meeting has been postponed until Thursday.','Cuộc họp đã được hoãn đến thứ Năm.'],
+['shipment','/ˈʃɪpmənt/','n','lô hàng; việc vận chuyển','The shipment is expected to arrive on Monday.','Lô hàng dự kiến đến vào thứ Hai.'],
+['merger','/ˈmɜːrdʒər/','n','sự sáp nhập','The merger of the two banks was announced yesterday.','Việc sáp nhập hai ngân hàng đã được công bố hôm qua.'],
+['budget','/ˈbʌdʒɪt/','n','ngân sách','The marketing budget was cut by half.','Ngân sách tiếp thị bị cắt giảm một nửa.'],
+['supervisor','/ˈsuːpərvaɪzər/','n','người giám sát, quản lý trực tiếp','Report any problems to your supervisor immediately.','Hãy báo ngay mọi vấn đề cho người quản lý trực tiếp.'],
+['eligible','/ˈelɪdʒəbl/','adj','đủ điều kiện','Full-time employees are eligible for the bonus.','Nhân viên toàn thời gian đủ điều kiện nhận thưởng.'],
+['mandatory','/ˈmændətɔːri/','adj','bắt buộc','Attendance at the safety training is mandatory.','Việc tham dự buổi huấn luyện an toàn là bắt buộc.'],
+['refund','/ˈriːfʌnd/','n','tiền hoàn lại','Customers can request a full refund within 30 days.','Khách hàng có thể yêu cầu hoàn tiền toàn bộ trong vòng 30 ngày.'],
+['subscription','/səbˈskrɪpʃn/','n','gói đăng ký định kỳ','Your subscription will be renewed automatically.','Gói đăng ký của bạn sẽ được gia hạn tự động.'],
+['reception','/rɪˈsepʃn/','n','quầy lễ tân; tiệc chiêu đãi','Please leave your key at the reception desk.','Vui lòng để lại chìa khóa ở quầy lễ tân.'],
+['brochure','/broʊˈʃʊr/','n','tờ giới thiệu, tờ quảng cáo','You can find our prices in the brochure.','Bạn có thể xem giá trong tờ giới thiệu.'],
+['estimate','/ˈestɪmət/','n','bản ước tính, báo giá','The contractor gave us an estimate for the repairs.','Nhà thầu đã gửi chúng tôi bản báo giá sửa chữa.'],
+['facility','/fəˈsɪləti/','n','cơ sở, nhà xưởng; tiện nghi','The new facility will open in March.','Nhà xưởng mới sẽ đi vào hoạt động vào tháng Ba.'],
+['renovation','/ˌrenəˈveɪʃn/','n','sự cải tạo, sửa sang','The lobby is closed for renovation.','Sảnh đang đóng cửa để cải tạo.'],
+['promote','/prəˈmoʊt/','v','thăng chức; quảng bá','She was promoted to sales manager last year.','Cô ấy được thăng chức trưởng phòng kinh doanh năm ngoái.'],
+['confidential','/ˌkɑːnfɪˈdenʃl/','adj','bảo mật, tuyệt mật','These documents are strictly confidential.','Những tài liệu này được bảo mật nghiêm ngặt.'],
+['attendance','/əˈtendəns/','n','sự tham dự; số người tham dự','Attendance at the conference was higher than expected.','Số người tham dự hội nghị cao hơn dự kiến.'],
+['expire','/ɪkˈspaɪər/','v','hết hạn','Your membership expires at the end of this month.','Thẻ thành viên của bạn hết hạn vào cuối tháng này.'],
+['representative','/ˌreprɪˈzentətɪv/','n','người đại diện','A customer service representative will call you back.','Nhân viên chăm sóc khách hàng sẽ gọi lại cho bạn.'],
+['approximately','/əˈprɑːksɪmətli/','adv','khoảng, xấp xỉ','The flight takes approximately three hours.','Chuyến bay mất khoảng ba tiếng.']
+];
+function seed() {
+  const existing = new Set(Object.values(state.words).map(w => norm(w.word)));
+  const now = Date.now(); let n = 0;
+  SEED.forEach(([word, ipa, pos, meaning, example, exampleVi], i) => {
+    if (existing.has(word)) return;
+    Store.saveWord({ id: uid() + i, created: now + i, reps: 0, interval: 0, ease: 2.5, lapses: 0, due: 0, word, ipa, pos, meaning, example, exampleVi, tag: 'TOEIC mẫu' }); n++;
+  });
+  toast(`Đã thêm ${n} từ TOEIC mẫu.`);
+  session = null; renderAll();
+}
+
+/* ---------- Practice ---------- */
+let pr = { mode: 'quiz', scope: '', run: null };
+const MODES = { quiz: ['Chọn nghĩa đúng', 'Xem từ, chọn 1 trong 4 nghĩa'], type: ['Gõ từ theo nghĩa', 'Xem nghĩa, viết lại từ tiếng Anh'], listen: ['Nghe và viết', 'Nghe phát âm, viết đúng chính tả'], picture: ['Nhìn hình đoán từ', 'Xem hình minh họa, viết từ tiếng Anh'], cloze: ['Điền từ vào câu', 'Câu ví dụ bị che một từ, chọn từ đúng như Part 5'] };
+function renderPractice() {
+  const el = $('#tab-practice');
+  if (pr.run) return renderRun();
+  const all = Object.values(state.words);
+  const tagOpts = tags().map(t => `<option value="${esc(t)}"${pr.scope === 'tag:' + t ? ' selected' : ''}>Bộ ${esc(t)}</option>`).join('');
+  const hardN = all.filter(w => (w.lapses || 0) > 0).length;
+  el.innerHTML = `
+    <h2>Luyện tập</h2><p class="lead">10 câu mỗi lượt. Từ bạn làm sai sẽ được đưa vào lượt ôn tiếp theo.</p>
+    <div class="modes">${Object.entries(MODES).map(([k, [t, d]]) => `<button class="mode" data-mode="${k}" aria-pressed="${pr.mode === k}"><b>${t}</b><span>${d}</span></button>`).join('')}</div>
+    <div class="row" style="margin-bottom:8px">
+      <label class="dir">Luyện với <select id="scopeSel">
+        <option value="">Tất cả từ (${all.length})</option>
+        <option value="learned"${pr.scope==='learned'?' selected':''}>Từ đã học</option>
+        <option value="hard"${pr.scope==='hard'?' selected':''}>Từ hay quên (${hardN})</option>
+        ${tagOpts}</select></label>
+      <button class="btn primary" data-act="startpr"${all.length < 4 ? ' disabled' : ''}>Bắt đầu</button>
+    </div>
+    ${all.length < 4 ? '<p class="lead">Cần ít nhất 4 từ trong sổ để luyện tập.</p>' : ''}`;
+  $('#scopeSel').addEventListener('change', e => { pr.scope = e.target.value; });
+  el.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => { pr.mode = b.dataset.mode; renderPractice(); }));
+}
+function startPractice() {
+  const all = Object.values(state.words);
+  let pool = all;
+  if (pr.scope === 'learned') pool = all.filter(w => !isNew(w));
+  else if (pr.scope === 'hard') pool = all.filter(w => (w.lapses || 0) > 0).sort((a, b) => b.lapses - a.lapses);
+  else if (pr.scope.startsWith('tag:')) pool = all.filter(w => w.tag === pr.scope.slice(4));
+  if (pr.mode === 'quiz') pool = pool.filter(w => w.meaning);
+  if (pr.mode === 'picture') pool = pool.filter(w => imgSrc(w));
+  if (pr.mode === 'cloze') pool = pool.filter(w => clozeOf(w));
+  if (!pool.length) { toast(pr.mode === 'picture' ? 'Chưa có từ nào có hình trong phạm vi này. Thêm hình trong Sổ từ trước.' : 'Không có từ nào trong phạm vi này.'); return; }
+  const items = (pr.scope === 'hard' ? pool.slice(0, 10) : shuffle(pool).slice(0, 10)).map(w => w.id);
+  pr.run = { items, i: 0, score: 0, wrong: [], answered: false, opts: null };
+  renderRun();
+}
+function renderRun() {
+  const el = $('#tab-practice'); const r = pr.run;
+  if (r.i >= r.items.length) {
+    el.innerHTML = `<div class="empty"><h2>${r.score}/${r.items.length} câu đúng</h2>
+      ${r.wrong.length ? `<p class="lead">Những từ cần ôn thêm:</p><ul class="hard-list" style="margin-bottom:18px">${r.wrong.map(id => state.words[id]).filter(Boolean).map(w => `<li><b>${esc(w.word)}</b><span>${esc(w.meaning)}</span></li>`).join('')}</ul>` : '<p class="lead">Không sai câu nào.</p>'}
+      <div class="row"><button class="btn primary" data-act="startpr">Luyện lượt khác</button><button class="btn" data-act="endpr">Đổi cách luyện</button></div></div>`;
+    return;
+  }
+  const w = state.words[r.items[r.i]];
+  if (!w) { r.i++; return renderRun(); }
+  const head = `<div class="session-bar"><span>Câu ${r.i + 1}/${r.items.length}</span><div class="meter"><i style="width:${r.i / r.items.length * 100}%"></i></div><button class="btn small" data-act="endpr">Dừng</button></div>`;
+  if (pr.mode === 'cloze') {
+    const c = clozeOf(w);
+    if (!c) { r.i++; return renderRun(); }
+    if (!r.opts) {
+      const form = c.before.trim() ? c.form : c.form.toLowerCase();
+      const others = shuffle(Object.values(state.words).filter(x => x.id !== w.id && x.word && !/\s/.test(x.word.trim()) && norm(x.word) !== norm(form)));
+      others.sort((a, b) => (b.pos === w.pos) - (a.pos === w.pos));
+      const seen = new Set([norm(form)]); const d = [];
+      for (const x of others) { const t = x.word.trim(); if (!seen.has(norm(t))) { seen.add(norm(t)); d.push(t); } if (d.length === 3) break; }
+      r.correct = form; r.opts = shuffle([form, ...d]);
+    }
+    el.innerHTML = head + `<div class="flash"><div class="kind">Chọn từ phù hợp nhất để điền vào chỗ trống</div>
+      <p class="cloze">${esc(c.before)}<span class="blank">&nbsp;</span>${esc(c.after)}</p>
+      <div class="opts">${r.opts.map((o, i) => `<button class="opt" data-opt="${i}">(${'ABCD'[i]}) ${esc(o)}</button>`).join('')}</div>
+      <div class="feedback" id="fb"></div></div>`;
+  } else if (pr.mode === 'quiz') {
+    if (!r.opts) {
+      const others = shuffle(Object.values(state.words).filter(x => x.id !== w.id && x.meaning && norm(x.meaning) !== norm(w.meaning)));
+      const seen = new Set(); const d = [];
+      for (const x of others) { if (!seen.has(norm(x.meaning))) { seen.add(norm(x.meaning)); d.push(x.meaning); } if (d.length === 3) break; }
+      r.opts = shuffle([w.meaning, ...d]); r.correct = w.meaning;
+    }
+    el.innerHTML = head + `<div class="flash"><div class="kind">Chọn nghĩa đúng</div><p class="headword">${esc(w.word)}</p>
+      <div class="ipa">${esc(w.ipa || '')}<button class="icon-btn" data-act="speakw" data-id="${w.id}" aria-label="Nghe phát âm">🔊</button></div>
+      <div class="opts">${r.opts.map((o, i) => `<button class="opt" data-opt="${i}">${esc(o)}</button>`).join('')}</div>
+      <div class="feedback" id="fb"></div></div>`;
+  } else {
+    const prompt = pr.mode === 'type'
+      ? `<div class="kind">Viết từ tiếng Anh có nghĩa</div><p class="headword vi">${esc(w.meaning || '(chưa có nghĩa)')}</p><div class="ipa">${w.pos && POS[w.pos] ? '(' + esc(POS[w.pos]) + ')' : ''}</div>`
+      : pr.mode === 'picture'
+      ? `<div class="kind">Hình này là từ gì?</div><img class="pic" src="${esc(imgSrc(w))}" alt="Hình minh họa cần đoán">`
+      : `<div class="kind">Nghe và viết lại từ</div><button class="btn" data-act="speakw" data-id="${w.id}" style="font-size:20px;padding:16px 26px">🔊 Nghe lại</button>`;
+    const pattern = w.word.split('').map((c, i) => i === 0 ? esc(c) : (c === ' ' ? '&nbsp;' : '_')).join(' ');
+    el.innerHTML = head + `<div class="flash">${prompt}
+      <div class="pattern" id="pattern" hidden>${pattern}</div>
+      <div class="answer"><input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Câu trả lời"><button class="btn primary" data-act="check">Kiểm tra</button></div>
+      <div class="row" style="margin-top:10px"><button class="btn small" data-act="hint">Gợi ý</button></div>
+      <div class="feedback" id="fb"></div></div>`;
+    const ans = $('#ans'); ans.focus();
+    ans.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); r.answered ? nextQ() : checkTyped(); } });
+    if (pr.mode === 'listen') setTimeout(() => speak(w.word), 250);
+  }
+}
+function markWrong(w) {
+  pr.run.wrong.push(w.id);
+  if (!isNew(w)) { w.due = Date.now(); w.lapses = (w.lapses || 0) + 1; Store.saveWord(w); }
+  else { w.lapses = (w.lapses || 0) + 1; Store.saveWord(w); }
+}
+function answerQuiz(i) {
+  const r = pr.run; if (r.answered) return;
+  const w = state.words[r.items[r.i]]; r.answered = true;
+  const ok = r.opts[i] === r.correct;
+  document.querySelectorAll('.opt').forEach((b, j) => { b.disabled = true; if (r.opts[j] === r.correct) b.classList.add('right'); else if (j === i) b.classList.add('wrong'); });
+  if (ok) r.score++; else markWrong(w);
+  logReview(); Store.saveMeta();
+  const fb = $('#fb'); fb.className = 'feedback ' + (ok ? 'ok' : 'no'); fb.innerHTML = (ok ? 'Chính xác.' : 'Chưa đúng.') + (pr.mode === 'cloze' ? `<div style="font-weight:400;color:var(--ink);margin:10px 0;text-align:left">${exampleHtml(w)}<p class="ex-vi">${esc(w.word)}: ${esc(w.meaning)}</p></div>` : '') + ` <button class="btn small" data-act="next" style="margin-left:8px">Câu tiếp</button>`;
+  fb.querySelector('button').focus();
+}
+function checkTyped() {
+  const r = pr.run; if (r.answered) return;
+  const w = state.words[r.items[r.i]]; const v = $('#ans').value;
+  if (!v.trim()) return;
+  r.answered = true;
+  const ok = norm(v) === norm(w.word);
+  if (ok) r.score++; else markWrong(w);
+  logReview(); Store.saveMeta();
+  speak(w.word);
+  const fb = $('#fb'); fb.className = 'feedback ' + (ok ? 'ok' : 'no');
+  fb.innerHTML = (ok ? 'Chính xác: ' : 'Đáp án đúng: ') + `<span style="font-family:Fraunces,Georgia,serif;font-size:20px">${esc(w.word)}</span>` + (pr.mode !== 'type' ? ` <span style="color:var(--muted);font-weight:400">(${esc(w.meaning)})</span>` : '') + `<div style="margin-top:8px;font-weight:400;color:var(--muted);font-size:14px">Nhấn Enter để sang câu tiếp</div>`;
+  $('#ans').readOnly = true;
+}
+function nextQ() { const r = pr.run; r.i++; r.answered = false; r.opts = null; renderRun(); }
+
+async function drawAll(btn) {
+  if (!sampleFn) return;
+  const q = norm(filter.q);
+  const targets = Object.values(state.words).filter(w => !w.img && (!filter.tag || w.tag === filter.tag) && (!filter.status || statusOf(w) === filter.status) && (!q || norm(w.word).includes(q) || norm(w.meaning).includes(q))).slice(0, 10);
+  btn.disabled = true; let n = 0;
+  for (const w of targets) {
+    btn.textContent = `AI đang vẽ ${n + 1}/${targets.length}…`;
+    const blob = await aiDraw(w);
+    if (!blob) break;
+    w.img = await storeImage(blob); Store.saveWord(w); n++;
+  }
+  toast(n ? `Đã vẽ hình cho ${n} từ.` : 'Chưa vẽ được hình nào.');
+  renderAll();
+}
+
+const reEsc = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function clozeOf(w) {
+  const ex = w.example || '', base = (w.word || '').trim();
+  if (!ex || !base) return null;
+  let i = -1, len = 0;
+  if (!/\s/.test(base)) {
+    const stem = base.length > 4 ? base.slice(0, base.length - 2) : base;
+    const m = new RegExp('\\b' + reEsc(stem) + '[a-zA-Z]*', 'i').exec(ex);
+    if (m) { i = m.index; len = m[0].length; }
+  } else { i = ex.toLowerCase().indexOf(base.toLowerCase()); len = base.length; }
+  if (i < 0) return null;
+  return { before: ex.slice(0, i), form: ex.slice(i, i + len), after: ex.slice(i + len) };
+}
+
+/* ---------- Reading ---------- */
+let reading = { open: null, sel: null };
+let editingPassage = null;
+const countWords = t => (String(t || '').match(/[A-Za-z]+/g) || []).length;
+function wordIndex() { const m = {}; Object.values(state.words).forEach(w => m[norm(w.word)] = w); return m; }
+function findKnown(tok, idx) {
+  const k = norm(tok).replace(/['’]s$/, '');
+  const c = [k];
+  if (k.endsWith('ies')) c.push(k.slice(0, -3) + 'y');
+  if (k.endsWith('es')) c.push(k.slice(0, -2));
+  if (k.endsWith('s')) c.push(k.slice(0, -1));
+  if (k.endsWith('ed')) c.push(k.slice(0, -2), k.slice(0, -1), k.slice(0, -3));
+  if (k.endsWith('ing')) c.push(k.slice(0, -3), k.slice(0, -3) + 'e', k.slice(0, -4));
+  if (k.endsWith('ly')) c.push(k.slice(0, -2));
+  for (const x of c) if (idx[x]) return idx[x];
+  return null;
+}
+function sentenceAt(text, o) {
+  let a = o; while (a > 0 && !/[.!?\n]/.test(text[a - 1])) a--;
+  let b = o; while (b < text.length && !/[.!?\n]/.test(text[b])) b++;
+  if (b < text.length && text[b] !== '\n') b++;
+  return text.slice(a, b).replace(/\s+/g, ' ').trim();
+}
+const P_STATUS = { new: 'Chưa đọc', reading: 'Đang đọc', done: 'Đã đọc' };
+const pStatus = x => x.status || 'new';
+let rf = { q: '', tag: '', status: '', part: '' };
+const groupOpen = {};
+const natCmp = (a, b) => String(a || '').localeCompare(String(b || ''), 'vi', { numeric: true, sensitivity: 'base' });
+function renderReading() {
+  const el = $('#tab-reading');
+  if (reading.open && state.passages[reading.open]) return renderPassage(state.passages[reading.open]);
+  reading.open = null; reading.sel = null;
+  const all = Object.values(state.passages);
+  const q = norm(rf.q);
+  const list = all.filter(x => (!rf.tag || (x.tag || '') === rf.tag) && (!rf.status || pStatus(x) === rf.status) && (!rf.part || (x.part || '') === rf.part)
+    && (!q || norm(x.title).includes(q) || norm(x.text).includes(q)));
+  const ptags = [...new Set(all.map(x => x.tag || ''))].sort(natCmp);
+  const idx = wordIndex();
+  const groups = {};
+  list.forEach(x => (groups[x.tag || ''] = groups[x.tag || ''] || []).push(x));
+  const names = Object.keys(groups).sort((a, b) => a === '' ? 1 : b === '' ? -1 : natCmp(a, b));
+  const filtering = !!(q || rf.tag || rf.status || rf.part);
+  const searching = document.activeElement && document.activeElement.id === 'pSearch';
+  const doneAll = all.filter(x => pStatus(x) === 'done').length;
+  const row = x => {
+    const toks = (x.text || '').match(/[A-Za-z][A-Za-z'’-]*[A-Za-z]|[A-Za-z]/g) || [];
+    const uniq = [...new Set(toks.map(t => norm(t)))].filter(t => t.length > 3);
+    const kn = uniq.filter(t => findKnown(t, idx)).length;
+    return `<div class="item" style="grid-template-columns:minmax(0,1fr) auto">
+      <button class="plink" data-act="openp" data-id="${x.id}"><span class="w">${esc(x.title || 'Bài đọc')}</span>
+        <span class="meta">${x.part ? `<span class="chip">${esc(x.part)}</span>` : ''}<span class="pstat ${pStatus(x)}">${P_STATUS[pStatus(x)]}</span>, ${toks.length} từ, ${kn} từ đã có trong sổ</span></button>
+      <div class="actions"><button class="icon-btn" data-act="editp" data-id="${x.id}" aria-label="Sửa bài">✎</button><button class="icon-btn" data-act="delp" data-id="${x.id}" aria-label="Xóa bài">✕</button></div></div>`;
+  };
+  el.innerHTML = `<h2>Đọc</h2><p class="lead">Dán đoạn văn từ đề bạn đang luyện. Khi đọc, bấm vào từ lạ để thêm vào sổ, câu gốc trong bài sẽ thành câu ví dụ.${all.length ? ` Đã đọc xong ${doneAll}/${all.length} bài.` : ''}</p>
+    ${all.length ? `<div class="toolbar">
+      <input type="search" id="pSearch" placeholder="Tìm theo tên bài hoặc nội dung" value="${esc(rf.q)}" aria-label="Tìm bài đọc">
+      <select id="pTag" aria-label="Lọc theo bộ đề"><option value="">Tất cả bộ đề</option>${ptags.map(t => `<option value="${esc(t)}"${rf.tag === t ? ' selected' : ''}>${t ? esc(t) : 'Chưa xếp bộ'}</option>`).join('')}</select>
+      <select id="pPart" aria-label="Lọc theo phần"><option value="">Mọi phần</option>${['Part 6','Part 7','Khác'].map(t => `<option${rf.part === t ? ' selected' : ''}>${t}</option>`).join('')}</select>
+      <select id="pStatus" aria-label="Lọc theo trạng thái"><option value="">Mọi trạng thái</option>${Object.entries(P_STATUS).map(([k, v]) => `<option value="${k}"${rf.status === k ? ' selected' : ''}>${v}</option>`).join('')}</select>
+    </div>` : ''}
+    <div class="row" style="margin-bottom:16px"><button class="btn primary" data-act="addp">Thêm bài đọc</button>${names.length > 1 ? `<button class="btn" data-act="pfold">${names.every(n => groupOpen[n]) ? 'Thu gọn tất cả' : 'Mở tất cả'}</button>` : ''}</div>
+    ${!all.length ? '<p class="lead">Chưa có bài đọc nào.</p>' : !list.length ? '<p class="lead">Không có bài nào khớp bộ lọc.</p>' :
+      names.map(n => {
+        const g = groups[n].sort((a, b) => natCmp(a.title, b.title));
+        const open = filtering || names.length === 1 || groupOpen[n];
+        const done = g.filter(x => pStatus(x) === 'done').length;
+        return `<details class="pgroup" data-group="${esc(n)}"${open ? ' open' : ''}><summary><span class="gname">${n ? esc(n) : 'Chưa xếp bộ'}</span><span class="gmeta">${done}/${g.length} bài đã đọc</span></summary>
+          <div class="list">${g.map(row).join('')}</div></details>`;
+      }).join('') + '<div style="border-top:1px solid var(--line)"></div>'}`;
+  if (!all.length) return;
+  const ps = $('#pSearch');
+  ps.addEventListener('input', e => { rf.q = e.target.value; renderReading(); });
+  if (searching) { ps.focus(); ps.setSelectionRange(ps.value.length, ps.value.length); }
+  $('#pTag').addEventListener('change', e => { rf.tag = e.target.value; renderReading(); });
+  $('#pPart').addEventListener('change', e => { rf.part = e.target.value; renderReading(); });
+  $('#pStatus').addEventListener('change', e => { rf.status = e.target.value; renderReading(); });
+  if (!filtering) el.querySelectorAll('details.pgroup').forEach(d => d.addEventListener('toggle', () => { groupOpen[d.dataset.group] = d.open; }));
+}
+function renderPassage(x) {
+  const el = $('#tab-reading'); const idx = wordIndex(); const text = x.text || '';
+  const fmt = t => esc(t).replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>');
+  const re = /[A-Za-z][A-Za-z'’-]*[A-Za-z]|[A-Za-z]/g;
+  let html = '', last = 0, m, known = 0, seen = new Set();
+  while ((m = re.exec(text))) {
+    html += fmt(text.slice(last, m.index));
+    const kw = findKnown(m[0], idx);
+    if (kw && !seen.has(kw.id)) { seen.add(kw.id); known++; }
+    html += `<span class="tok${kw ? ' known' : ''}${reading.sel && reading.sel.o === m.index ? ' sel' : ''}" data-o="${m.index}">${esc(m[0])}</span>`;
+    last = m.index + m[0].length;
+  }
+  html += fmt(text.slice(last));
+  el.innerHTML = `<div class="passage-head"><button class="btn small" data-act="closep">Tất cả bài đọc</button><span class="meta" style="font-size:13px;color:var(--muted)">${known} từ trong bài đã có trong sổ</span></div>
+    <h2 style="margin:14px 0 4px">${esc(x.title || 'Bài đọc')}</h2><p class="lead" style="margin-bottom:14px">${x.part ? `<span class="chip">${esc(x.part)}</span>` : ''}${x.tag ? esc(x.tag) : ''}</p>
+    <div class="passage"><p>${html}</p>
+      <div class="row" style="font:400 16px/1.5 'Be Vietnam Pro',sans-serif;margin-top:8px">${pStatus(x) === 'done'
+        ? `<span class="pstat done">Đã đọc xong</span><button class="btn small" data-act="pundone" data-id="${x.id}">Đánh dấu chưa xong</button>`
+        : `<button class="btn primary" data-act="pdone" data-id="${x.id}">Đánh dấu đã đọc xong</button>`}</div></div><div id="sheetBox"></div>`;
+  renderSheet();
+}
+function renderSheet() {
+  const box = $('#sheetBox'); if (!box) return;
+  const sel = reading.sel; if (!sel) { box.innerHTML = ''; return; }
+  const kw = findKnown(sel.t, wordIndex());
+  box.innerHTML = `<div class="sheet" role="dialog" aria-label="Từ đã chọn">
+    <div class="row" style="justify-content:space-between"><span class="sw">${esc(kw ? kw.word : sel.t)}</span>
+      <span><button class="icon-btn" data-act="speaksel" aria-label="Nghe phát âm">🔊</button><button class="icon-btn" data-act="closesheet" aria-label="Đóng">✕</button></span></div>
+    ${kw ? `<p style="margin:4px 0 0">${esc(kw.meaning || '')}</p><p class="ss">Đã có trong sổ, ${STATUS_VI[statusOf(kw)].toLowerCase()}.</p>
+      <div class="row"><button class="btn small" data-act="edit" data-id="${kw.id}">Xem và sửa</button></div>`
+    : `<p class="ss">${esc(sel.s)}</p><div class="row"><button class="btn primary small" data-act="addsel">Thêm vào sổ</button></div>`}
+  </div>`;
+}
+function selectToken(span) {
+  const x = state.passages[reading.open]; if (!x) return;
+  const o = +span.dataset.o, t = span.textContent;
+  document.querySelectorAll('.tok.sel').forEach(n => n.classList.remove('sel'));
+  if (reading.sel && reading.sel.o === o) { reading.sel = null; renderSheet(); return; }
+  span.classList.add('sel');
+  reading.sel = { o, t, s: sentenceAt(x.text, o) };
+  renderSheet();
+}
+function openPassageEditor(id) {
+  editingPassage = id || null; const x = id ? state.passages[id] : {};
+  $('#passTitle').textContent = id ? 'Sửa bài đọc' : 'Thêm bài đọc';
+  $('#p-title').value = x.title || ''; $('#p-tag').value = x.tag || (id ? '' : rf.tag); $('#p-text').value = x.text || ''; $('#p-part').value = x.part || '';
+  $('#passDlg').showModal();
+}
+$('#passSaveBtn').addEventListener('click', () => {
+  const text = $('#p-text').value.trim();
+  if (!text) { toast('Dán nội dung bài đọc trước khi lưu.'); return; }
+  if (text.length > 60000) { toast('Bài đọc quá dài, hãy chia thành nhiều bài nhỏ.'); return; }
+  const x = Object.assign(editingPassage ? state.passages[editingPassage] : { id: 'p-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), created: Date.now(), kind: 'passage' },
+    { title: $('#p-title').value.trim(), tag: $('#p-tag').value.trim(), part: $('#p-part').value, text });
+  Store.savePassage(x); $('#passDlg').close();
+  reading.open = x.id; reading.sel = null; renderReading(); updateTags();
+});
+
+/* ---------- Backup ---------- */
+let downloadsFn;
+async function getDownloads() {
+  if (downloadsFn !== undefined) return downloadsFn;
+  downloadsFn = null;
+  if (window.claude && typeof window.claude.use === 'function') { try { downloadsFn = await claude.use('downloads'); } catch (e) {} }
+  return downloadsFn;
+}
+async function imageForExport(w) {
+  const v = w.img; if (!v) return '';
+  if (v.startsWith('data:')) return v;
+  try { const r = await fetch(imgSrc(w)); if (!r.ok) return ''; return await blobToDataUrl(await r.blob()); } catch (e) { return ''; }
+}
+async function exportBackup(btn) {
+  const withImg = $('#expImg') && $('#expImg').checked;
+  btn.disabled = true; btn.textContent = 'Đang chuẩn bị…';
+  const words = [];
+  for (const w of Object.values(state.words)) {
+    const o = Object.assign({}, w);
+    o.img = withImg ? await imageForExport(w) : '';
+    words.push(o);
+  }
+  const data = JSON.stringify({ app: 'so-tu', version: 1, exportedAt: new Date().toISOString(), meta: state.meta, words, passages: Object.values(state.passages) }, null, 1);
+  const filename = 'so-tu-' + dayKey() + '.json';
+  btn.disabled = false; btn.textContent = 'Xuất file sao lưu';
+  const dl = await getDownloads();
+  if (dl) {
+    try { const r = await dl.save({ filename, data: new Blob([data], { type: 'application/json' }) }); if (r && r.status === 'saved') toast(`Đã xuất ${words.length} từ.`); }
+    catch (e) { if (!e || e.code !== 'declined') toast('Không xuất được file lúc này.'); }
+    return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast(`Đã xuất ${words.length} từ.`);
+}
+async function importBackup(file) {
+  let o;
+  try { o = JSON.parse(await file.text()); } catch (e) { toast('File không đúng định dạng JSON.'); return; }
+  const list = o && Array.isArray(o.words) ? o.words : null;
+  if (!list) { toast('File này không phải bản sao lưu của Sổ từ.'); return; }
+  const byWord = {}; Object.values(state.words).forEach(w => byWord[norm(w.word)] = w);
+  let added = 0, updated = 0, kept = 0;
+  toast('Đang nhập dữ liệu…');
+  for (const raw of list) {
+    if (!raw || typeof raw.word !== 'string' || !raw.word.trim()) continue;
+    const inc = {};
+    ['word','ipa','pos','meaning','example','exampleVi','tag'].forEach(k => inc[k] = typeof raw[k] === 'string' ? raw[k] : '');
+    ['created','reps','interval','ease','lapses','due','last'].forEach(k => { if (typeof raw[k] === 'number' && isFinite(raw[k])) inc[k] = raw[k]; });
+    if (!POS.hasOwnProperty(inc.pos)) inc.pos = '';
+    const ex = byWord[norm(inc.word)];
+    if (ex && (ex.last || 0) >= (inc.last || 0)) {
+      if (!ex.img && typeof raw.img === 'string' && raw.img.startsWith('data:image/')) { ex.img = await importImage(raw.img); Store.saveWord(ex); }
+      kept++; continue;
+    }
+    inc.img = typeof raw.img === 'string' && raw.img.startsWith('data:image/') ? await importImage(raw.img) : (ex ? ex.img || '' : '');
+    const w = Object.assign({ reps: 0, interval: 0, ease: 2.5, lapses: 0, due: 0, created: Date.now() }, ex || {}, inc, { id: ex ? ex.id : uid() });
+    Store.saveWord(w); byWord[norm(w.word)] = w;
+    ex ? updated++ : added++;
+  }
+  let pAdded = 0;
+  if (Array.isArray(o.passages)) {
+    const have = new Set(Object.values(state.passages).map(x => norm(x.title) + '|' + norm(x.text).slice(0, 200)));
+    o.passages.forEach((x, n) => {
+      if (!x || typeof x.text !== 'string' || !x.text.trim()) return;
+      const key = norm(x.title) + '|' + norm(x.text).slice(0, 200); if (have.has(key)) return; have.add(key);
+      Store.savePassage({ id: 'p-' + Date.now().toString(36) + n + Math.random().toString(36).slice(2, 6), kind: 'passage', created: typeof x.created === 'number' ? x.created : Date.now(), title: typeof x.title === 'string' ? x.title : '', tag: typeof x.tag === 'string' ? x.tag : '', part: ['Part 6','Part 7','Khác'].includes(x.part) ? x.part : '', status: ['new','reading','done'].includes(x.status) ? x.status : 'new', text: x.text.slice(0, 60000) });
+      pAdded++;
+    });
+  }
+  if (o.meta && typeof o.meta === 'object') {
+    ['log','newLog'].forEach(k => { const src = o.meta[k]; if (src && typeof src === 'object') for (const d in src) { const n = +src[d]; if (/^\d{4}-\d{2}-\d{2}$/.test(d) && n > 0) state.meta[k][d] = Math.max(state.meta[k][d] || 0, n); } });
+    Store.saveMeta();
+  }
+  session = null; renderAll();
+  toast(`Đã nhập: ${added} từ mới, cập nhật ${updated} từ${kept ? `, giữ nguyên ${kept} từ` : ''}${pAdded ? `, ${pAdded} bài đọc` : ''}.`);
+}
+async function importImage(dataUrl) {
+  if (!assetsFn) return dataUrl;
+  try { const blob = await (await fetch(dataUrl)).blob(); return await storeImage(blob); } catch (e) { return dataUrl; }
+}
+
+/* ---------- Progress ---------- */
+function streak() {
+  let n = 0; let t = Date.now();
+  if (!state.meta.log[dayKey(t)]) t -= DAY;
+  while (state.meta.log[dayKey(t)]) { n++; t -= DAY; }
+  return n;
+}
+function renderProgress() {
+  const el = $('#tab-progress');
+  const all = Object.values(state.words);
+  const c = { new: 0, learning: 0, mastered: 0 }; all.forEach(w => c[statusOf(w)]++);
+  const days = []; for (let i = 13; i >= 0; i--) { const t = Date.now() - i * DAY; days.push({ k: dayKey(t), d: new Date(t), n: state.meta.log[dayKey(t)] || 0 }); }
+  const max = Math.max(5, ...days.map(d => d.n));
+  const tomorrow = all.filter(w => !isNew(w) && w.due < startOfDay(Date.now() + 2 * DAY)).length;
+  const hard = all.filter(w => (w.lapses || 0) > 0).sort((a, b) => b.lapses - a.lapses).slice(0, 8);
+  el.innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${all.length}</b><span>Tổng số từ</span></div>
+      <div class="stat"><b>${c.mastered}</b><span>Đã thuộc</span></div>
+      <div class="stat"><b>${c.learning}</b><span>Đang học</span></div>
+      <div class="stat"><b>${c.new}</b><span>Chưa học</span></div>
+      <div class="stat"><b>${streak()}</b><span>Ngày học liên tiếp</span></div>
+      <div class="stat"><b>${tomorrow}</b><span>Thẻ đến hạn tới hết mai</span></div>
+    </div>
+    <div class="block"><h2>Số lượt ôn 14 ngày qua</h2><p class="lead">Tính cả lượt lật thẻ và lượt luyện tập.</p>
+      <div class="chart">${days.map((d, i) => `<div class="bar${i === 13 ? ' today' : ''}" title="${d.k}: ${d.n} lượt"><em>${d.n || ''}</em><i style="height:${d.n / max * 100}%"></i></div>`).join('')}</div>
+      <div class="chart-x">${days.map((d, i) => `<span>${i === 13 ? 'Nay' : d.d.getDate()}</span>`).join('')}</div></div>
+    <div class="block"><h2>Từ hay quên</h2>
+      ${hard.length ? `<ul class="hard-list">${hard.map(w => `<li><b>${esc(w.word)}</b><span>${esc(w.meaning)}, quên ${w.lapses} lần</span></li>`).join('')}</ul>` : '<p class="lead">Chưa có từ nào bị quên. Ôn đều tay để giữ như vậy.</p>'}</div>
+    <div class="block"><h2>Cài đặt</h2>
+      <div class="setting"><label for="npd">Số từ mới mỗi ngày</label><input type="number" id="npd" min="1" max="200" value="${state.meta.newPerDay || 15}"></div>
+      <p class="lead" style="margin-top:8px">Nên giữ 10 đến 20 từ mới mỗi ngày; số thẻ cần ôn sẽ tăng dần theo số từ đã học.</p></div>
+    <div class="block"><h2>Sao lưu dữ liệu</h2>
+      <p class="lead">Xuất toàn bộ sổ từ, lịch ôn và lịch sử học ra một file JSON để sao lưu hoặc chuyển sang web khác. Nhập lại file đó để khôi phục; từ trùng sẽ giữ bản được ôn gần nhất.</p>
+      <label class="check"><input type="checkbox" id="expImg" checked> Kèm hình ảnh (file sẽ nặng hơn)</label>
+      <div class="row"><button class="btn primary" data-act="export">Xuất file sao lưu</button>
+        <label class="btn" style="cursor:pointer">Nhập file sao lưu<input type="file" id="impFile" accept=".json,application/json" hidden></label></div></div>`;
+  $('#impFile').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) importBackup(f); });
+  $('#npd').addEventListener('change', e => { const v = Math.max(1, Math.min(200, parseInt(e.target.value, 10) || 15)); state.meta.newPerDay = v; e.target.value = v; Store.saveMeta(); session = null; updateBadge(); toast('Đã lưu cài đặt.'); });
+}
+
+/* ---------- Global events ---------- */
+document.addEventListener('click', e => {
+  const tok = e.target.closest('.tok'); if (tok) return selectToken(tok);
+  const t = e.target.closest('[data-act],[data-grade],[data-opt]'); if (!t) return;
+  if (t.dataset.grade) return grade(+t.dataset.grade);
+  if (t.dataset.opt !== undefined) return answerQuiz(+t.dataset.opt);
+  const a = t.dataset.act, id = t.dataset.id;
+  if (a === 'add') openEditor();
+  else if (a === 'bulk') openBulk();
+  else if (a === 'seed') seed();
+  else if (a === 'flip') flip();
+  else if (a === 'speak') { const w = state.words[session && session.queue[0]]; if (w) speak(w.word); }
+  else if (a === 'speakw') { const w = state.words[id]; if (w) speak(w.word); }
+  else if (a === 'edit') openEditor(id);
+  else if (a === 'del') { const w = state.words[id]; if (w && confirm(`Xóa "${w.word}" khỏi sổ từ?`)) { Store.removeWord(id); session = null; renderAll(); toast(`Đã xóa "${w.word}".`); } }
+  else if (a === 'topractice') go('practice');
+  else if (a === 'morenew') { const k = dayKey(); state.meta.newLog[k] = Math.max(0, (state.meta.newLog[k] || 0) - 10); Store.saveMeta(); session = null; renderReview(); updateBadge(); }
+  else if (a === 'startpr') { pr.run = null; startPractice(); }
+  else if (a === 'endpr') { pr.run = null; renderPractice(); }
+  else if (a === 'next') nextQ();
+  else if (a === 'drawall') drawAll(t);
+  else if (a === 'export') exportBackup(t);
+  else if (a === 'checktyped') checkReviewTyped(false);
+  else if (a === 'nomem') checkReviewTyped(true);
+  else if (a === 'addp') openPassageEditor();
+  else if (a === 'editp') openPassageEditor(id);
+  else if (a === 'openp') { const x = state.passages[id]; if (x && pStatus(x) === 'new') { x.status = 'reading'; Store.savePassage(x); } reading.open = id; reading.sel = null; renderReading(); window.scrollTo(0, 0); }
+  else if (a === 'pdone' || a === 'pundone') { const x = state.passages[id]; if (x) { x.status = a === 'pdone' ? 'done' : 'reading'; Store.savePassage(x); if (a === 'pdone') { reading.open = null; reading.sel = null; toast('Đã đánh dấu đọc xong.'); } renderReading(); } }
+  else if (a === 'pfold') { const names = [...document.querySelectorAll('details.pgroup')].map(d => d.dataset.group); const openAll = !names.every(n => groupOpen[n]); names.forEach(n => groupOpen[n] = openAll); renderReading(); }
+  else if (a === 'closep') { reading.open = null; reading.sel = null; renderReading(); }
+  else if (a === 'delp') { const x = state.passages[id]; if (x && confirm(`Xóa bài đọc "${x.title || 'Bài đọc'}"? Các từ đã thêm vào sổ vẫn được giữ.`)) { Store.removePassage(id); renderReading(); } }
+  else if (a === 'closesheet') { reading.sel = null; document.querySelectorAll('.tok.sel').forEach(n => n.classList.remove('sel')); renderSheet(); }
+  else if (a === 'speaksel') { if (reading.sel) speak(reading.sel.t); }
+  else if (a === 'addsel') { const x = state.passages[reading.open]; if (reading.sel && x) openEditor(null, { word: reading.sel.t.toLowerCase().replace(/['’]s$/, ''), example: reading.sel.s, tag: x.tag || '' }); }
+  else if (a === 'check') { pr.run.answered ? nextQ() : checkTyped(); }
+  else if (a === 'hint') { const p = $('#pattern'); if (p) p.hidden = false; $('#ans') && $('#ans').focus(); }
+});
+document.addEventListener('keydown', e => {
+  if (document.querySelector('dialog[open]')) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+  if (current === 'review' && session && session.queue.length) {
+    if ((e.key === ' ' || e.key === 'Enter') && !session.flipped) { e.preventDefault(); flip(); }
+    else if (session.flipped && ['1','2','3','4'].includes(e.key)) { e.preventDefault(); grade(+e.key - 1); }
+  } else if (current === 'practice' && pr.run && (pr.mode === 'quiz' || pr.mode === 'cloze')) {
+    if (!pr.run.answered && ['1','2','3','4'].includes(e.key)) answerQuiz(+e.key - 1);
+    else if (pr.run.answered && e.key === 'Enter') { e.preventDefault(); nextQ(); }
+  }
+});
+
+/* ---------- Auth Dialog UI ---------- */
+function openAuthDialog() {
+  const dlg = $('#authDlg');
+  if (!dlg) return;
+  const userInfo = $('#authUserInfo');
+  const userEmail = $('#authUserEmail');
+  const form = $('#authForm');
+  const actions = $('#authActions');
+  const title = $('#authTitle');
+
+  if (currentUser) {
+    title.textContent = 'Thông tin tài khoản';
+    userInfo.hidden = false;
+    userEmail.textContent = currentUser.email || 'Đã đăng nhập';
+    form.hidden = true;
+    actions.hidden = false;
+  } else {
+    title.textContent = 'Đăng nhập tài khoản';
+    userInfo.hidden = true;
+    form.hidden = false;
+    actions.hidden = true;
+    $('#authEmail').value = '';
+    $('#authPassword').value = '';
+  }
+  dlg.showModal();
+}
+
+const ab = $('#authBtn');
+if (ab) ab.addEventListener('click', openAuthDialog);
+
+const sib = $('#signInBtn');
+if (sib) sib.addEventListener('click', async e => {
+  if (!sb) { toast('Chưa kết nối được với Supabase.'); return; }
+  const email = $('#authEmail').value.trim();
+  const password = $('#authPassword').value;
+  if (!email || !password) { toast('Vui lòng nhập email và mật khẩu.'); return; }
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang đăng nhập…';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = 'Đăng nhập';
+  if (error) {
+    toast('Lỗi: ' + (error.message || 'Đăng nhập thất bại'));
+  } else {
+    $('#authDlg').close();
+    toast('Đăng nhập thành công!');
+    currentUser = data.user;
+    Store.sync();
+  }
+});
+
+const sub = $('#signUpBtn');
+if (sub) sub.addEventListener('click', async e => {
+  if (!sb) { toast('Chưa kết nối được với Supabase.'); return; }
+  const email = $('#authEmail').value.trim();
+  const password = $('#authPassword').value;
+  if (!email || password.length < 6) { toast('Vui lòng nhập email và mật khẩu từ 6 ký tự.'); return; }
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = 'Đang đăng ký…';
+  const { data, error } = await sb.auth.signUp({ email, password });
+  btn.disabled = false; btn.textContent = 'Đăng ký';
+  if (error) {
+    toast('Lỗi: ' + (error.message || 'Đăng ký thất bại'));
+  } else {
+    toast('Đăng ký thành công!');
+    if (data.session) {
+      $('#authDlg').close();
+      currentUser = data.user;
+      Store.sync();
+    }
+  }
+});
+
+const sob = $('#signOutBtn');
+if (sob) sob.addEventListener('click', async () => {
+  if (!sb) return;
+  await sb.auth.signOut();
+  currentUser = null;
+  Store.mode = 'local';
+  setSync();
+  $('#authDlg').close();
+  toast('Đã đăng xuất.');
+});
+
+/* ---------- Boot ---------- */
+Store.loadLocal();
+renderAll();
+Store.connect();
+initAI();
+initAssets();
+})();
+</script>
+</body>
+</html>
