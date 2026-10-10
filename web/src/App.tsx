@@ -152,6 +152,7 @@ export function App() {
           {currentTab === 'vocab' && (
             <VocabSection 
               words={words} 
+              questions={questions}
               savedWordIds={savedWordIds} 
               onToggleSave={handleToggleSave} 
               onUpdateFSRS={handleUpdateFSRS}
@@ -161,6 +162,10 @@ export function App() {
           {currentTab === 'reading' && (
             <ReadingSection 
               questions={questions} 
+              words={words}
+              savedWordIds={savedWordIds}
+              onQuickAddWord={handleAddWord}
+              onToggleSave={handleToggleSave}
             />
           )}
 

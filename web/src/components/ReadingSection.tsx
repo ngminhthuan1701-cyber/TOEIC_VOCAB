@@ -1,15 +1,30 @@
-import React, { useState } from 'react'
-import { Question } from '../types'
-import { CheckCircle2, XCircle, HelpCircle, BookOpen, Award, RotateCcw, Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import { Word, Question } from '../types'
+import { CheckCircle2, XCircle, HelpCircle, BookOpen, Award, RotateCcw, Sparkles, Plus, BookmarkCheck, Volume2, X } from 'lucide-react'
 
 interface ReadingProps {
   questions: Question[]
+  words: Word[]
+  savedWordIds: number[]
+  onQuickAddWord: (word: Omit<Word, 'id'>) => void
+  onToggleSave: (id: number) => void
 }
 
-export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
+export const ReadingSection: React.FC<ReadingProps> = ({ 
+  questions,
+  words,
+  savedWordIds,
+  onQuickAddWord,
+  onToggleSave
+}) => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({})
   const [submitted, setSubmitted] = useState(false)
   const [activePartFilter, setActivePartFilter] = useState<number | 'all'>('all')
+
+  // Tra từ 1 chạm Popover
+  const [lookupWord, setLookupWord] = useState<string | null>(null)
+  const [matchedDictWord, setMatchedDictWord] = useState<Word | null>(null)
+  const [isWordSaved, setIsWordSaved] = useState(false)
 
   const filteredQuestions = activePartFilter === 'all'
     ? questions
@@ -36,8 +51,70 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
 
   const scoreInfo = calculateScore()
 
+  // Tra từ 1 chạm khi click vào từ
+  const handleWordClick = (rawWord: string) => {
+    const cleanWord = rawWord.replace(/[^a-zA-Z]/g, '').toLowerCase()
+    if (!cleanWord || cleanWord.length <= 2) return
+
+    setLookupWord(cleanWord)
+    const found = words.find(w => w.word.toLowerCase() === cleanWord)
+    if (found) {
+      setMatchedDictWord(found)
+      setIsWordSaved(savedWordIds.includes(found.id))
+    } else {
+      setMatchedDictWord(null)
+      setIsWordSaved(false)
+    }
+  }
+
+  // Tách văn bản thành từng từ có thể click
+  const renderInteractiveText = (text: string) => {
+    return text.split(/(\s+)/).map((segment, idx) => {
+      const isWord = /^[a-zA-Z]{3,}/.test(segment)
+      if (!isWord) return segment
+
+      return (
+        <span
+          key={idx}
+          onClick={() => handleWordClick(segment)}
+          className="hover:bg-sky-100 hover:text-[#0284c7] hover:underline cursor-pointer rounded px-0.5 transition-colors"
+          title="Chạm để tra từ & thêm vào sổ tay"
+        >
+          {segment}
+        </span>
+      )
+    })
+  }
+
+  const speak = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.lang = 'en-US'
+      utterance.rate = 0.85
+      window.speechSynthesis.speak(utterance)
+    }
+  }
+
+  const handleQuickAdd = () => {
+    if (!lookupWord) return
+    if (matchedDictWord) {
+      onToggleSave(matchedDictWord.id)
+      setIsWordSaved(!isWordSaved)
+    } else {
+      onQuickAddWord({
+        word: lookupWord,
+        meaning_vn: 'Từ vựng lưu nhanh từ bài đọc ETS 2023',
+        pos: 'từ vựng',
+        category: 'Từ tra trong bài đọc',
+        memoryLevel: 1
+      })
+      setIsWordSaved(true)
+    }
+  }
+
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto relative">
       {/* Top Banner & Part Filters */}
       <div className="bg-white p-6 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
@@ -167,14 +244,14 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
 
               {/* Passage for Part 6 & Part 7 */}
               {q.passage_text && (
-                <div className="mb-6 p-6 bg-[#f8fafc] border border-slate-200 rounded-2xl font-serif text-sm leading-relaxed text-slate-800 whitespace-pre-line shadow-inner">
-                  {q.passage_text}
+                <div className="mb-6 p-6 bg-[#f8fafc] border border-slate-200 rounded-2xl font-serif text-sm leading-relaxed text-slate-800 whitespace-pre-line shadow-inner select-text">
+                  {renderInteractiveText(q.passage_text)}
                 </div>
               )}
 
               {/* Question Text */}
-              <p className="text-base font-bold text-slate-800 mb-6 leading-relaxed">
-                {q.question_text}
+              <p className="text-base font-bold text-slate-800 mb-6 leading-relaxed select-text">
+                {renderInteractiveText(q.question_text)}
               </p>
 
               {/* Options Grid */}
@@ -261,6 +338,71 @@ export const ReadingSection: React.FC<ReadingProps> = ({ questions }) => {
           >
             <Sparkles className="w-4 h-4" /> Nộp bài & Xem giải thích chi tiết
           </button>
+        </div>
+      )}
+
+      {/* Click-to-Lookup Popover / Floating Card */}
+      {lookupWord && (
+        <div className="fixed bottom-6 right-6 z-40 bg-white border border-[#bae6fd] rounded-3xl p-5 shadow-2xl max-w-sm w-full animate-in fade-in slide-in-from-bottom-4 space-y-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-sky-100 text-[#0284c7] rounded uppercase">
+                Tra từ nhanh 1-chạm
+              </span>
+              <h4 className="text-xl font-black text-slate-800 mt-1 capitalize">{lookupWord}</h4>
+              <p className="text-xs text-slate-400 font-mono italic">
+                {matchedDictWord?.ipa || '/.../'} • {matchedDictWord?.pos || 'từ vựng'}
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => speak(lookupWord)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-50"
+                title="Nghe phát âm"
+              >
+                <Volume2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setLookupWord(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100 text-xs font-bold text-emerald-800">
+            {matchedDictWord ? matchedDictWord.meaning_vn : 'Nghĩa đang được cập nhật từ điển TOEIC ETS.'}
+          </div>
+
+          {matchedDictWord?.mnemonic && (
+            <p className="text-[11px] text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+              💡 <strong>Mẹo nhớ:</strong> {matchedDictWord.mnemonic}
+            </p>
+          )}
+
+          <div className="pt-1 flex items-center justify-between gap-2">
+            <button
+              onClick={handleQuickAdd}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                isWordSaved
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-md shadow-sky-200'
+              }`}
+            >
+              {isWordSaved ? (
+                <>
+                  <BookmarkCheck className="w-4 h-4" />
+                  <span>Đã lưu vào Sổ tay</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  <span>Thêm vào bộ thẻ (1 chạm)</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
     </div>

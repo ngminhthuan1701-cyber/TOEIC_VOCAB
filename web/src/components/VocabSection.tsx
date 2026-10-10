@@ -5,6 +5,8 @@ import { LearnMode } from './modes/LearnMode'
 import { TestMode } from './modes/TestMode'
 import { MatchMode } from './modes/MatchMode'
 import { SpellMode } from './modes/SpellMode'
+import { ETSContextModal } from './ETSContextModal'
+import { Question } from '../types'
 import { 
   Volume2, 
   RotateCw, 
@@ -24,11 +26,13 @@ import {
   FileCheck,
   Zap,
   Headphones,
-  Layers
+  Layers,
+  FileText
 } from 'lucide-react'
 
 interface VocabProps {
   words: Word[]
+  questions: Question[]
   savedWordIds: number[]
   onToggleSave: (id: number) => void
   onUpdateFSRS: (wordId: number, rating: FSRSRating) => void
@@ -36,6 +40,7 @@ interface VocabProps {
 
 export const VocabSection: React.FC<VocabProps> = ({ 
   words, 
+  questions,
   savedWordIds, 
   onToggleSave,
   onUpdateFSRS 
@@ -46,6 +51,7 @@ export const VocabSection: React.FC<VocabProps> = ({
   const [searchTerm, setSearchTerm] = useState('')
   const [dailyLimit, setDailyLimit] = useState(20)
   const [showSettings, setShowSettings] = useState(false)
+  const [showETSModal, setShowETSModal] = useState(false)
   const [activeStudyMode, setActiveStudyMode] = useState<'flashcard' | 'learn' | 'test' | 'match' | 'spell'>('flashcard')
 
   const categories = ['all', ...Array.from(new Set(words.map(w => w.category).filter(Boolean)))]
@@ -298,6 +304,20 @@ export const VocabSection: React.FC<VocabProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
+                {/* Nút Xem trong đề ETS 2023 */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowETSModal(true)
+                  }}
+                  className="px-3 py-2 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Xem trực tiếp câu hỏi & đoạn văn chứa từ trong đề ETS 2023"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Xem trong đề</span>
+                </button>
+
                 {/* Audio Button */}
                 <button
                   type="button"
@@ -489,6 +509,15 @@ export const VocabSection: React.FC<VocabProps> = ({
         </div>
       )}
       </>
+      )}
+      {showETSModal && currentWord && (
+        <ETSContextModal
+          word={currentWord}
+          questions={questions}
+          isSaved={isSaved}
+          onToggleSave={onToggleSave}
+          onClose={() => setShowETSModal(false)}
+        />
       )}
     </div>
   )
