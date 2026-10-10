@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import * as XLSX from 'xlsx'
 import { Word, WordFolder } from '../types'
 import { FSRSScheduler, FSRSRating } from '../lib/fsrs'
 import { LearnMode } from './modes/LearnMode'
@@ -22,7 +23,12 @@ import {
   FileCheck,
   Headphones,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  FileSpreadsheet,
+  Download,
+  Upload,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react'
 
 interface NotebookProps {
@@ -31,6 +37,7 @@ interface NotebookProps {
   savedWordIds: number[]
   onRemoveSave: (id: number) => void
   onAddWord: (word: Omit<Word, 'id'>) => void
+  onAddMultipleWords: (words: Omit<Word, 'id'>[]) => void
   onCreateFolder: (folder: WordFolder) => void
   onUpdateMemoryLevel: (wordId: number, level: number) => void
   onUpdateFSRS: (wordId: number, rating: FSRSRating) => void
@@ -42,6 +49,7 @@ export const NotebookView: React.FC<NotebookProps> = ({
   savedWordIds, 
   onRemoveSave, 
   onAddWord, 
+  onAddMultipleWords,
   onCreateFolder,
   onUpdateMemoryLevel,
   onUpdateFSRS
@@ -59,6 +67,7 @@ export const NotebookView: React.FC<NotebookProps> = ({
   const [isFlipped, setIsFlipped] = useState(false)
 
   // New Word Form State
+  const [addModeTab, setAddModeTab] = useState<'quick' | 'excel' | 'full'>('quick')
   const [newWord, setNewWord] = useState('')
   const [newIpa, setNewIpa] = useState('')
   const [newPos, setNewPos] = useState('noun')
@@ -66,6 +75,12 @@ export const NotebookView: React.FC<NotebookProps> = ({
   const [newExampleEn, setNewExampleEn] = useState('')
   const [newExampleVn, setNewExampleVn] = useState('')
   const [newTargetFolder, setNewTargetFolder] = useState('f-important')
+
+  // Excel Import State
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importedPreview, setImportedPreview] = useState<Omit<Word, 'id'>[]>([])
+  const [importFileName, setImportFileName] = useState('')
+  const [importStatus, setImportStatus] = useState<string | null>(null)
 
   // New Folder Form State
   const [newFolderName, setNewFolderName] = useState('')
@@ -123,6 +138,128 @@ export const NotebookView: React.FC<NotebookProps> = ({
     setNewMeaning('')
     setNewExampleEn('')
     setNewExampleVn('')
+    setShowAddWordModal(false)
+  }
+
+  // Tải file Excel mẫu (.xlsx)
+  const handleDownloadExcelTemplate = () => {
+    const templateData = [
+      {
+        'Từ tiếng Anh': 'lucrative',
+        'Nghĩa tiếng Việt': 'sinh lợi, có lợi nhuận cao',
+        'Phiên âm IPA': '/ˈluː.krə.t̬ɪv/',
+        'Từ loại': 'adjective',
+        'Câu ví dụ': 'The company signed a lucrative contract.',
+        'Dịch ví dụ': 'Công ty đã ký một hợp đồng béo bở.'
+      },
+      {
+        'Từ tiếng Anh': 'subsequent',
+        'Nghĩa tiếng Việt': 'xảy ra sau, tiếp theo',
+        'Phiên âm IPA': '/ˈsʌb.sɪ.kwənt/',
+        'Từ loại': 'adjective',
+        'Câu ví dụ': 'Subsequent studies confirmed the original findings.',
+        'Dịch ví dụ': 'Các nghiên cứu tiếp theo đã xác nhận kết quả ban đầu.'
+      },
+      {
+        'Từ tiếng Anh': 'implement',
+        'Nghĩa tiếng Việt': 'thi hành, thực hiện',
+        'Phiên âm IPA': '/ˈɪm.plə.ment/',
+        'Từ loại': 'verb',
+        'Câu ví dụ': 'We need to implement the new policy next week.',
+        'Dịch ví dụ': 'Chúng ta cần triển khai chính sách mới vào tuần tới.'
+      }
+    ]
+
+    const worksheet = XLSX.utils.json_to_sheet(templateData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'TuVungTOEIC')
+
+    // Tự căn chỉnh chiều rộng cột
+    worksheet['!cols'] = [
+      { wch: 18 },
+      { wch: 28 },
+      { wch: 18 },
+      { wch: 14 },
+      { wch: 45 },
+      { wch: 45 }
+    ]
+
+    XLSX.writeFile(workbook, 'Mau_Nhap_Tu_Vung_TOEIC.xlsx')
+  }
+
+  // Xử lý upload file Excel (.xlsx, .xls, .csv)
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setImportFileName(file.name)
+    setImportStatus(null)
+
+    const reader = new FileReader()
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result
+        const workbook = XLSX.read(bstr, { type: 'binary' })
+        const firstSheetName = workbook.SheetNames[0]
+        const worksheet = workbook.Sheets[firstSheetName]
+        const rawJson: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' })
+
+        if (!rawJson || rawJson.length === 0) {
+          setImportStatus('File Excel không có dữ liệu.')
+          return
+        }
+
+        // Tự động nhận diện tên cột linh hoạt (hỗ trợ cả tiếng Việt và tiếng Anh)
+        const parsedWords: Omit<Word, 'id'>[] = rawJson
+          .map((row) => {
+            const word = (row['Từ tiếng Anh'] || row['Word'] || row['Từ'] || row['word'] || row['Vocabulary'] || '').toString().trim()
+            const meaning = (row['Nghĩa tiếng Việt'] || row['Nghĩa'] || row['Meaning'] || row['meaning'] || row['Dịch nghĩa'] || '').toString().trim()
+            const ipa = (row['Phiên âm IPA'] || row['IPA'] || row['Phiên âm'] || row['ipa'] || '/.../').toString().trim()
+            const pos = (row['Từ loại'] || row['POS'] || row['pos'] || row['Loại từ'] || 'từ vựng').toString().trim()
+            const exampleEn = (row['Câu ví dụ'] || row['Example'] || row['example_en'] || row['Ví dụ'] || '').toString().trim()
+            const exampleVn = (row['Dịch ví dụ'] || row['Example Meaning'] || row['example_vn'] || '').toString().trim()
+
+            if (!word || !meaning) return null
+
+            return {
+              word,
+              meaning_vn: meaning,
+              ipa: ipa || '/.../',
+              pos: pos || 'từ vựng',
+              example_en: exampleEn,
+              example_vn: exampleVn,
+              folderId: selectedFolderId && selectedFolderId !== 'all' ? selectedFolderId : newTargetFolder,
+              memoryLevel: 1,
+              category: 'Import Excel',
+              collocations: []
+            }
+          })
+          .filter(Boolean) as Omit<Word, 'id'>[]
+
+        if (parsedWords.length === 0) {
+          setImportStatus('Không tìm thấy cột "Từ tiếng Anh" và "Nghĩa tiếng Việt" hợp lệ trong file.')
+          setImportedPreview([])
+        } else {
+          setImportedPreview(parsedWords)
+          setImportStatus(`Đã đọc thành công ${parsedWords.length} từ vựng từ file Excel!`)
+        }
+      } catch (err) {
+        console.error(err)
+        setImportStatus('Lỗi khi đọc file. Vui lòng kiểm tra định dạng .xlsx hoặc .xls.')
+      }
+    }
+
+    reader.readAsBinaryString(file)
+  }
+
+  // Xác nhận lưu toàn bộ từ vừa Import
+  const handleConfirmImportExcel = () => {
+    if (importedPreview.length === 0) return
+
+    onAddMultipleWords(importedPreview)
+    setImportedPreview([])
+    setImportFileName('')
+    setImportStatus(null)
     setShowAddWordModal(false)
   }
 
@@ -756,128 +893,331 @@ export const NotebookView: React.FC<NotebookProps> = ({
         </div>
       )}
 
-      {/* 5. MODAL: THÊM TỪ VỰNG MỚI */}
+      {/* 5. MODAL: THÊM TỪ VỰNG MỚI & IMPORT TỪ EXCEL */}
       {showAddWordModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in-95">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-xl w-full shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-[#e0f2fe] text-[#0284c7]">
-                  <Plus className="w-5 h-5" />
+              <div className="flex items-center gap-2.5">
+                <span className="p-2.5 rounded-2xl bg-[#e0f2fe] text-[#0284c7]">
+                  {addModeTab === 'excel' ? <FileSpreadsheet className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 </span>
-                <h3 className="text-lg font-black text-slate-800">Thêm từ vựng vào sổ tay</h3>
+                <div>
+                  <h3 className="text-lg font-black text-slate-800">Thêm từ vựng vào sổ tay</h3>
+                  <p className="text-xs text-slate-400">Chọn cách thêm từ phù hợp và tiện lợi nhất cho bạn</p>
+                </div>
               </div>
               <button 
-                onClick={() => setShowAddWordModal(false)}
+                onClick={() => {
+                  setShowAddWordModal(false)
+                  setImportedPreview([])
+                  setImportStatus(null)
+                  setImportFileName('')
+                }}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateWordSubmit} className="space-y-3.5">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Từ tiếng Anh *</label>
-                <input
-                  type="text"
-                  required
-                  value={newWord}
-                  onChange={(e) => setNewWord(e.target.value)}
-                  placeholder="Ví dụ: lucrative"
-                  className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
-                />
-              </div>
+            {/* TAB SELECTOR: Nhập nhanh (2 ô) | Import Excel (.xlsx) | Nhập chi tiết */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-2xl text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setAddModeTab('quick')}
+                className={`py-2 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  addModeTab === 'quick' ? 'bg-white text-[#0284c7] shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <span>⚡</span> Nhập siêu nhanh
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddModeTab('excel')}
+                className={`py-2 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  addModeTab === 'excel' ? 'bg-[#0284c7] text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" /> Import Excel
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddModeTab('full')}
+                className={`py-2 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  addModeTab === 'full' ? 'bg-white text-[#0284c7] shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <span>📝</span> Đầy đủ ví dụ
+              </button>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
+            {/* TARGET FOLDER SELECTOR (Áp dụng chung) */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">Lưu vào bộ sổ tay:</label>
+              <select
+                value={selectedFolderId && selectedFolderId !== 'all' ? selectedFolderId : newTargetFolder}
+                onChange={(e) => setNewTargetFolder(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 font-semibold"
+              >
+                {folders.map(f => (
+                  <option key={f.id} value={f.id}>{f.icon} {f.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* TAB 1: NHẬP SIÊU NHANH (Chỉ cần Từ và Nghĩa) */}
+            {addModeTab === 'quick' && (
+              <form onSubmit={handleCreateWordSubmit} className="space-y-4">
+                <div className="bg-[#f0f9ff] p-3 rounded-2xl border border-sky-100 text-[11px] text-[#0284c7]">
+                  💡 <strong>Tiết kiệm thời gian:</strong> Chỉ cần gõ từ tiếng Anh và nghĩa tiếng Việt, hệ thống sẽ tự động tạo thẻ học ngay cho bạn!
+                </div>
+
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Phiên âm IPA</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Từ tiếng Anh *</label>
                   <input
                     type="text"
-                    value={newIpa}
-                    onChange={(e) => setNewIpa(e.target.value)}
-                    placeholder="/ˈluː.krə.t̬ɪv/"
+                    required
+                    autoFocus
+                    value={newWord}
+                    onChange={(e) => setNewWord(e.target.value)}
+                    placeholder="Ví dụ: lucrative, negotiation, deadline..."
+                    className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Nghĩa tiếng Việt *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMeaning}
+                    onChange={(e) => setNewMeaning(e.target.value)}
+                    placeholder="Ví dụ: sinh lợi cao, sự đàm phán, hạn chót..."
                     className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
                   />
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Từ loại</label>
-                  <select
-                    value={newPos}
-                    onChange={(e) => setNewPos(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddWordModal(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
                   >
-                    <option value="noun">Danh từ (n)</option>
-                    <option value="verb">Động từ (v)</option>
-                    <option value="adjective">Tính từ (adj)</option>
-                    <option value="adverb">Trạng từ (adv)</option>
-                    <option value="phrase">Cụm từ (phrase)</option>
-                  </select>
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-xl shadow-md shadow-sky-200 cursor-pointer"
+                  >
+                    + Lưu từ vựng ngay
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* TAB 2: IMPORT TỪ EXCEL / CSV */}
+            {addModeTab === 'excel' && (
+              <div className="space-y-4">
+                {/* Download sample file button */}
+                <div className="flex items-center justify-between p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold">
+                      <FileSpreadsheet className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <div className="text-xs font-black text-emerald-800">Mẫu file Excel chuẩn (.xlsx)</div>
+                      <div className="text-[10px] text-emerald-600">Đã định dạng sẵn các cột: Từ, Nghĩa, Phiên âm, Ví dụ</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDownloadExcelTemplate}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Tải file mẫu</span>
+                  </button>
+                </div>
+
+                {/* Upload Area */}
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-6 border-2 border-dashed border-[#bae6fd] hover:border-[#0284c7] bg-[#f0f9ff]/40 hover:bg-[#f0f9ff] rounded-2xl text-center cursor-pointer transition-all group"
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx, .xls, .csv"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+                  <div className="w-12 h-12 rounded-2xl bg-[#e0f2fe] text-[#0284c7] group-hover:scale-110 flex items-center justify-center mx-auto transition-transform">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                  <div className="text-xs font-black text-slate-800 mt-3">
+                    {importFileName ? importFileName : 'Nhấp để chọn file Excel từ máy tính (.xlsx, .xls, .csv)'}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Hỗ trợ file Excel có hàng chục hoặc hàng trăm từ vựng cùng lúc
+                  </p>
+                </div>
+
+                {/* Import Status Alert */}
+                {importStatus && (
+                  <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                    importedPreview.length > 0 
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold' 
+                      : 'bg-rose-50 text-rose-700 border border-rose-200'
+                  }`}>
+                    {importedPreview.length > 0 ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+                    <span>{importStatus}</span>
+                  </div>
+                )}
+
+                {/* Preview Table if file loaded */}
+                {importedPreview.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                      <span>Xem trước danh sách ({importedPreview.length} từ):</span>
+                      <span className="text-[#0284c7] text-[11px]">Sẵn sàng nạp vào bộ thẻ</span>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 text-xs">
+                      {importedPreview.slice(0, 15).map((w, idx) => (
+                        <div key={idx} className="p-2.5 flex items-center justify-between hover:bg-slate-50">
+                          <div>
+                            <span className="font-black text-slate-800">{w.word}</span>
+                            <span className="text-slate-400 font-mono text-[10px] ml-1.5">{w.ipa}</span>
+                          </div>
+                          <span className="text-slate-600 font-medium text-right max-w-xs truncate">{w.meaning_vn}</span>
+                        </div>
+                      ))}
+                      {importedPreview.length > 15 && (
+                        <div className="p-2 text-center text-slate-400 text-[11px] font-bold bg-slate-50">
+                          ... và thêm {importedPreview.length - 15} từ vựng khác
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddWordModal(false)
+                      setImportedPreview([])
+                      setImportStatus(null)
+                    }}
+                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    disabled={importedPreview.length === 0}
+                    onClick={handleConfirmImportExcel}
+                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-200 cursor-pointer transition-all"
+                  >
+                    ✓ Xác nhận nạp {importedPreview.length} từ vào Sổ tay
+                  </button>
                 </div>
               </div>
+            )}
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Nghĩa tiếng Việt *</label>
-                <input
-                  type="text"
-                  required
-                  value={newMeaning}
-                  onChange={(e) => setNewMeaning(e.target.value)}
-                  placeholder="Ví dụ: sinh lợi, có lợi nhuận cao"
-                  className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
-                />
-              </div>
+            {/* TAB 3: NHẬP ĐẦY ĐỦ CHI TIẾT */}
+            {addModeTab === 'full' && (
+              <form onSubmit={handleCreateWordSubmit} className="space-y-3.5">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Từ tiếng Anh *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newWord}
+                    onChange={(e) => setNewWord(e.target.value)}
+                    placeholder="Ví dụ: lucrative"
+                    className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
+                  />
+                </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Thuộc bộ sổ tay</label>
-                <select
-                  value={newTargetFolder}
-                  onChange={(e) => setNewTargetFolder(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
-                >
-                  {folders.map(f => (
-                    <option key={f.id} value={f.id}>{f.icon} {f.name}</option>
-                  ))}
-                </select>
-              </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Phiên âm IPA</label>
+                    <input
+                      type="text"
+                      value={newIpa}
+                      onChange={(e) => setNewIpa(e.target.value)}
+                      placeholder="/ˈluː.krə.t̬ɪv/"
+                      className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Từ loại</label>
+                    <select
+                      value={newPos}
+                      onChange={(e) => setNewPos(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
+                    >
+                      <option value="noun">Danh từ (n)</option>
+                      <option value="verb">Động từ (v)</option>
+                      <option value="adjective">Tính từ (adj)</option>
+                      <option value="adverb">Trạng từ (adv)</option>
+                      <option value="phrase">Cụm từ (phrase)</option>
+                    </select>
+                  </div>
+                </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Câu ví dụ tiếng Anh</label>
-                <input
-                  type="text"
-                  value={newExampleEn}
-                  onChange={(e) => setNewExampleEn(e.target.value)}
-                  placeholder="The company signed a lucrative contract."
-                  className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
-                />
-              </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Nghĩa tiếng Việt *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newMeaning}
+                    onChange={(e) => setNewMeaning(e.target.value)}
+                    placeholder="Ví dụ: sinh lợi, có lợi nhuận cao"
+                    className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
+                  />
+                </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Dịch nghĩa câu ví dụ</label>
-                <input
-                  type="text"
-                  value={newExampleVn}
-                  onChange={(e) => setNewExampleVn(e.target.value)}
-                  placeholder="Công ty đã ký một hợp đồng béo bở đầy lợi nhuận."
-                  className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
-                />
-              </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Câu ví dụ tiếng Anh</label>
+                  <input
+                    type="text"
+                    value={newExampleEn}
+                    onChange={(e) => setNewExampleEn(e.target.value)}
+                    placeholder="The company signed a lucrative contract."
+                    className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
+                  />
+                </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddWordModal(false)}
-                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-xl shadow-md shadow-sky-200 cursor-pointer"
-                >
-                  Lưu từ vựng
-                </button>
-              </div>
-            </form>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Dịch nghĩa câu ví dụ</label>
+                  <input
+                    type="text"
+                    value={newExampleVn}
+                    onChange={(e) => setNewExampleVn(e.target.value)}
+                    placeholder="Công ty đã ký một hợp đồng béo bở đầy lợi nhuận."
+                    className="w-full px-3.5 py-2.5 bg-[#f8fafc] border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddWordModal(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-xl shadow-md shadow-sky-200 cursor-pointer"
+                  >
+                    Lưu từ vựng
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

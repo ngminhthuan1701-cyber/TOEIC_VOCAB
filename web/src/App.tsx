@@ -113,6 +113,26 @@ export function App() {
     }))
   }
 
+  // Import danh sách nhiều từ vựng (Excel/CSV)
+  const handleAddMultipleWords = (newWordsData: Omit<Word, 'id'>[]) => {
+    if (newWordsData.length === 0) return
+    const baseId = Date.now()
+    const completeWords: Word[] = newWordsData.map((data, idx) => ({
+      ...data,
+      id: baseId + idx
+    }))
+    const newIds = completeWords.map(w => w.id)
+
+    setWords(prev => [...completeWords, ...prev])
+    setSavedWordIds(prev => [...newIds, ...prev])
+
+    // Update stats
+    setUserStats(prev => ({
+      ...prev,
+      vocabLearned: prev.vocabLearned + completeWords.length
+    }))
+  }
+
   // Create new folder
   const handleCreateFolder = (newFolder: WordFolder) => {
     setFolders(prev => [...prev, newFolder])
@@ -194,6 +214,7 @@ export function App() {
               savedWordIds={savedWordIds} 
               onRemoveSave={handleToggleSave} 
               onAddWord={handleAddWord}
+              onAddMultipleWords={handleAddMultipleWords}
               onCreateFolder={handleCreateFolder}
               onUpdateMemoryLevel={handleUpdateMemoryLevel}
               onUpdateFSRS={handleUpdateFSRS}
