@@ -199,58 +199,162 @@ export const NotebookView: React.FC<NotebookProps> = ({
         </div>
       </div>
 
-      {/* 2. FOLDERS / BỘ SỔ TAY BAR & ACTION BUTTONS */}
-      <div className="bg-white p-5 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Folders List */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
-          <button
-            onClick={() => setSelectedFolderId('all')}
-            className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-              selectedFolderId === 'all'
-                ? 'bg-[#0284c7] text-white shadow-sm'
-                : 'bg-[#f8fafc] text-slate-600 hover:bg-[#e0f2fe] hover:text-[#0284c7] border border-slate-100'
-            }`}
-          >
-            <Folder className="w-3.5 h-3.5" />
-            <span>Tất cả ({savedWords.length})</span>
-          </button>
+      {/* 2. BỘ SỔ TAY THÔNG MINH - DECK GRID & QUẢN LÝ */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2">
+              <Folder className="w-4 h-4 text-[#0284c7]" />
+              <span>BỘ SỔ TAY TỪ VỰNG</span>
+            </h2>
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-[#0284c7]">
+              {folders.length + 1} bộ thẻ
+            </span>
+          </div>
 
-          {folders.map(folder => {
-            const count = savedWords.filter(w => w.folderId === folder.id).length
-            return (
-              <button
-                key={folder.id}
-                onClick={() => setSelectedFolderId(folder.id)}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                  selectedFolderId === folder.id
-                    ? 'bg-[#0284c7] text-white shadow-sm'
-                    : 'bg-[#f8fafc] text-slate-600 hover:bg-[#e0f2fe] hover:text-[#0284c7] border border-slate-100'
-                }`}
-              >
-                <span>{folder.icon}</span>
-                <span>{folder.name}</span>
-                <span className="text-[10px] opacity-75">({count})</span>
-              </button>
-            )
-          })}
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAddFolderModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f0f9ff] text-[#0284c7] border border-[#bae6fd] hover:bg-sky-100 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            >
+              <FolderPlus className="w-3.5 h-3.5" />
+              <span>+ Tạo bộ mới</span>
+            </button>
+            <button
+              onClick={() => setShowAddWordModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white rounded-xl text-xs font-bold shadow-sm shadow-sky-200 transition-all cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Thêm từ</span>
+            </button>
+          </div>
         </div>
 
-        {/* Action Buttons: Thêm bộ sổ tay & Thêm từ vựng */}
-        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+        {/* FOLDER DECK GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Card: Tất cả từ đã lưu */}
+          {(() => {
+            const allCount = savedWords.length
+            const allMastered = savedWords.filter(w => (w.memoryLevel || 1) >= 4).length
+            const allPct = allCount > 0 ? Math.round((allMastered / allCount) * 100) : 0
+            const isSelected = selectedFolderId === 'all'
+
+            return (
+              <div
+                onClick={() => setSelectedFolderId('all')}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between text-left relative overflow-hidden group ${
+                  isSelected
+                    ? 'bg-gradient-to-br from-sky-500 to-[#0284c7] text-white border-transparent shadow-md shadow-sky-200'
+                    : 'bg-white border-[#e2e8f0] hover:border-sky-300 hover:shadow-xs text-slate-800'
+                }`}
+              >
+                <div>
+                  <div className="flex items-start justify-between">
+                    <span className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-[#e0f2fe] text-[#0284c7]'
+                    }`}>
+                      🗂️
+                    </span>
+                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {allCount} từ
+                    </span>
+                  </div>
+
+                  <h3 className={`font-black text-sm mt-3 ${isSelected ? 'text-white' : 'text-slate-800'}`}>
+                    Tất cả từ đã lưu
+                  </h3>
+                  <p className={`text-[11px] line-clamp-1 mt-0.5 ${isSelected ? 'text-sky-100' : 'text-slate-400'}`}>
+                    Toàn bộ kho từ vựng cá nhân
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-current/10">
+                  <div className="flex items-center justify-between text-[10px] font-bold mb-1.5 opacity-90">
+                    <span>Tiến độ thuộc:</span>
+                    <span>{allPct}%</span>
+                  </div>
+                  <div className={`h-1.5 rounded-full overflow-hidden ${isSelected ? 'bg-white/25' : 'bg-slate-100'}`}>
+                    <div
+                      className={`h-full rounded-full transition-all ${isSelected ? 'bg-white' : 'bg-emerald-500'}`}
+                      style={{ width: `${allPct}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Cards for each user folder */}
+          {folders.map(folder => {
+            const folderWords = savedWords.filter(w => w.folderId === folder.id)
+            const count = folderWords.length
+            const mastered = folderWords.filter(w => (w.memoryLevel || 1) >= 4).length
+            const pct = count > 0 ? Math.round((mastered / count) * 100) : 0
+            const isSelected = selectedFolderId === folder.id
+
+            return (
+              <div
+                key={folder.id}
+                onClick={() => setSelectedFolderId(folder.id)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between text-left relative overflow-hidden group ${
+                  isSelected
+                    ? 'bg-gradient-to-br from-sky-500 to-[#0284c7] text-white border-transparent shadow-md shadow-sky-200'
+                    : 'bg-white border-[#e2e8f0] hover:border-sky-300 hover:shadow-xs text-slate-800'
+                }`}
+              >
+                <div>
+                  <div className="flex items-start justify-between">
+                    <span className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-[#e0f2fe] text-[#0284c7]'
+                    }`}>
+                      {folder.icon || '📁'}
+                    </span>
+                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {count} từ
+                    </span>
+                  </div>
+
+                  <h3 className={`font-black text-sm mt-3 line-clamp-1 ${isSelected ? 'text-white' : 'text-slate-800'}`}>
+                    {folder.name}
+                  </h3>
+                  <p className={`text-[11px] line-clamp-1 mt-0.5 ${isSelected ? 'text-sky-100' : 'text-slate-400'}`}>
+                    {folder.description || 'Sổ tay học chuyên đề'}
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-current/10">
+                  <div className="flex items-center justify-between text-[10px] font-bold mb-1.5 opacity-90">
+                    <span>Tiến độ thuộc:</span>
+                    <span>{pct}%</span>
+                  </div>
+                  <div className={`h-1.5 rounded-full overflow-hidden ${isSelected ? 'bg-white/25' : 'bg-slate-100'}`}>
+                    <div
+                      className={`h-full rounded-full transition-all ${isSelected ? 'bg-white' : 'bg-emerald-500'}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+
+          {/* Dotted Card: Thêm bộ sổ tay mới */}
           <button
             onClick={() => setShowAddFolderModal(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-[#f0f9ff] text-[#0284c7] border border-[#bae6fd] hover:bg-sky-100 rounded-2xl text-xs font-bold transition-all cursor-pointer"
+            className="p-4 rounded-2xl border-2 border-dashed border-[#bae6fd] hover:border-[#0284c7] bg-[#f0f9ff]/40 hover:bg-[#f0f9ff] text-slate-600 hover:text-[#0284c7] transition-all flex flex-col items-center justify-center gap-2 cursor-pointer group min-h-[140px]"
           >
-            <FolderPlus className="w-4 h-4" />
-            <span>+ Tạo bộ sổ tay</span>
-          </button>
-
-          <button
-            onClick={() => setShowAddWordModal(true)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white rounded-2xl text-xs font-bold shadow-md shadow-sky-200 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Thêm từ vựng mới</span>
+            <div className="w-10 h-10 rounded-2xl bg-[#e0f2fe] group-hover:bg-[#0284c7] group-hover:text-white text-[#0284c7] flex items-center justify-center transition-all">
+              <Plus className="w-5 h-5" />
+            </div>
+            <div className="text-center">
+              <div className="text-xs font-black">Tạo bộ mới</div>
+              <div className="text-[10px] text-slate-400">Phân loại theo đề/chủ đề</div>
+            </div>
           </button>
         </div>
       </div>
