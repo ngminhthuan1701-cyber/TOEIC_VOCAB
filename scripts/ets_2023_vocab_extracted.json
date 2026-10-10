@@ -1,0 +1,492 @@
+{
+  "metadata": {
+    "source": "ETS 2023 TOEIC Test 1-10",
+    "total_words_extracted": 15,
+    "total_passages_extracted": 1,
+    "total_suspicious_ocr_tokens": 0,
+    "ocr_engine": "Tesseract-OCR v5.5 + PyMuPDF",
+    "exported_at": "2026-10-10"
+  },
+  "passages": [
+    {
+      "test_number": 1,
+      "part_number": 7,
+      "question_range": "151-153",
+      "passage_type": "article",
+      "title": "Tillford Press Announces New Imprint Tillford Exalt",
+      "content_raw": "Questions 151-153 refer to the following article.\nLONDON (2 February)—On Thursday,\nTillford Press announced the launch of its\nnew imprint, Tillford Exalt. This new line\nwill feature books promoting healthy\nlifestyles, memoirs with uplifting messages,\nand volumes that provide guidance for\nspecial occasions such as birthdays and\nweddings. Tillford Exalt will also publish\ncalendars and greeting cards that\ncomplement the main products.\nAlready contracted to write memoirs are\nthe award-winning actress Alexia Leoz,\nLondon-based conductor and composer\nSeung-Hyun Bae, and celebrity cook Lain\nLai. Ms. Lai’s story of her life and career\nwill be the first to be launched. It is set for\nrelease in December.\n151. What is the main purpose of the article?\n(A) To promote a new line of cookware\nTo advertise an orchestra concert\nTo announce a new series of books\nTo provide a calendar of local events\nTillford vice president Frederick Bissett\nsaid the company saw a need for books that\ncelebrated accomplishments and life events\nfrom multiple perspectives. “We wanted\nauthors from a wide variety of cultural\nbackgrounds, and we think we’re off to a\ngreat start,” he said. He noted that Tillford\nExalt’s authors were not always famous; the\nbooks will be exploring their beginnings,\ntheir everyday lives, their first jobs, their\nmarriages and families—as well as their\nachievements.\nTillford Press is based in Manchester. It\nhas offices in New York, Toronto, and\nSydney, but its publications are sold\nthroughout the world.\n153. What does Frederick Bissett emphasize\nabout Tillford Exalt?\n(A) Its record-breaking sales\nIts roots in Manchester\nIts focus on fiction and poetry\n(B)\n(C)\n(D) Its broad range of authors\n152. What is planned for December?\n(A) An awards ceremony\n(B) The publication of a life story\n(C) The release of a new album\n(D) The launch of a celebrity’s restaurant\nGO ON TO THE NEXT PAGE\ne\nTEST1 29",
+      "content_translated": "LONDON (2 tháng 2) - Vào thứ Năm, Tillford Press đã thông báo ra mắt nhãn hiệu xuất bản mới của mình, Tillford Exalt. Dòng sản phẩm mới này sẽ giới thiệu các cuốn sách thúc đẩy lối sống lành mạnh, hồi ký với các thông điệp truyền cảm hứng và các tập sách hướng dẫn cho các dịp đặc biệt như sinh nhật và đám cưới. Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng bổ sung cho các sản phẩm chính. Đã được ký hợp đồng viết hồi ký gồm có nữ diễn viên đoạt giải Alexia Leoz, nhạc trưởng và nhà soạn nhạc Seung-Hyun Bae tại London, và đầu bếp nổi tiếng Lain Lai."
+    }
+  ],
+  "words": [
+    {
+      "word": "assured",
+      "ipa": "/əˈʃʊrd/",
+      "pos": "verb (past)",
+      "meaning_vn": "được bảo đảm, chắc chắn rằng",
+      "definition_en": "made certain or confident of something",
+      "frequency_count": 1,
+      "toeic_level": 650,
+      "topic": "Office & Administration",
+      "distractor_flag": true,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "verb",
+          "word": "assure"
+        },
+        {
+          "pos": "noun",
+          "word": "assurance"
+        }
+      ],
+      "collocations": [
+        "rest assured that",
+        "be assured that"
+      ],
+      "confusing_pairs": [
+        "assure (cam đoan với ai) vs ensure (đảm bảo việc gì) vs insure (bảo hiểm)"
+      ],
+      "context": {
+        "test_number": 1,
+        "part_number": 5,
+        "question_number": 109,
+        "sentence_en": "Before the seminar began, attendees were assured that all scheduled presenters would appear.",
+        "sentence_vn": "Trước khi hội thảo bắt đầu, người tham dự đã được bảo đảm rằng tất cả các diễn giả theo lịch trình sẽ xuất hiện."
+      }
+    },
+    {
+      "word": "remarkable",
+      "ipa": "/rɪˈmɑːr.kə.bəl/",
+      "pos": "adjective",
+      "meaning_vn": "đáng kể, rõ rệt, xuất sắc",
+      "definition_en": "unusual or special and therefore surprising and worth mentioning",
+      "frequency_count": 1,
+      "toeic_level": 650,
+      "topic": "Finance & Business",
+      "distractor_flag": true,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "verb",
+          "word": "remark"
+        },
+        {
+          "pos": "adverb",
+          "word": "remarkably"
+        }
+      ],
+      "collocations": [
+        "a remarkable decrease",
+        "a remarkable achievement"
+      ],
+      "confusing_pairs": [
+        "remarkable (đáng kể) vs noted (nổi tiếng)"
+      ],
+      "context": {
+        "test_number": 1,
+        "part_number": 5,
+        "question_number": 113,
+        "sentence_en": "A drop in consumer demand has led to a remarkable decrease in the production of large pickup trucks.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "lucrative",
+      "ipa": "/ˈluː.krə.t̬ɪv/",
+      "pos": "adjective",
+      "meaning_vn": "sinh lợi cao, béo bở",
+      "definition_en": "producing a large amount of money or profit",
+      "frequency_count": 3,
+      "toeic_level": 800,
+      "topic": "Contracts & Finance",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "noun",
+          "word": "lucrativeness"
+        }
+      ],
+      "collocations": [
+        "a lucrative contract",
+        "a lucrative market"
+      ],
+      "confusing_pairs": [
+        "lucrative (sinh lợi) vs lavish (xa hoa)"
+      ],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "subsequent",
+      "ipa": "/ˈsʌb.sɪ.kwənt/",
+      "pos": "adjective",
+      "meaning_vn": "xảy ra sau, tiếp theo sau đó",
+      "definition_en": "happening or coming after something else",
+      "frequency_count": 3,
+      "toeic_level": 650,
+      "topic": "Office & Operations",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "adverb",
+          "word": "subsequently"
+        }
+      ],
+      "collocations": [
+        "subsequent studies",
+        "subsequent to"
+      ],
+      "confusing_pairs": [
+        "subsequent (tiếp theo) vs consecutive (liên tiếp liên tục)"
+      ],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "implement",
+      "ipa": "/ˈɪm.plə.ment/",
+      "pos": "verb",
+      "meaning_vn": "thi hành, triển khai, thực hiện",
+      "definition_en": "to start using a plan or system",
+      "frequency_count": 3,
+      "toeic_level": 650,
+      "topic": "Management",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "noun",
+          "word": "implementation"
+        }
+      ],
+      "collocations": [
+        "implement a policy",
+        "implement changes"
+      ],
+      "confusing_pairs": [
+        "implement (triển khai) vs complement (bổ sung)"
+      ],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "complement",
+      "ipa": "/ˈkɑːm.plə.ment/",
+      "pos": "verb",
+      "meaning_vn": "bổ sung, làm cho hoàn chỉnh",
+      "definition_en": "to help make something or someone more complete or effective",
+      "frequency_count": 1,
+      "toeic_level": 800,
+      "topic": "Marketing & Publishing",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "adjective",
+          "word": "complementary"
+        }
+      ],
+      "collocations": [
+        "complement the main products",
+        "complement each other"
+      ],
+      "confusing_pairs": [
+        "complement (bổ sung) vs compliment (lời khen ngợi)"
+      ],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "Tillford Exalt will also publish calendars and greeting cards that complement the main products.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "imprint",
+      "ipa": "/ˈɪm.prɪnt/",
+      "pos": "noun",
+      "meaning_vn": "nhãn hiệu xuất bản, dấu ấn",
+      "definition_en": "the name under which a publisher issues books",
+      "frequency_count": 1,
+      "toeic_level": 800,
+      "topic": "Publishing",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [],
+      "collocations": [
+        "launch a new imprint"
+      ],
+      "confusing_pairs": [],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "uplifting",
+      "ipa": "/ʌpˈlɪf.tɪŋ/",
+      "pos": "adjective",
+      "meaning_vn": "nâng cao tinh thần, tích cực, truyền cảm hứng",
+      "definition_en": "making someone feel better or more hopeful",
+      "frequency_count": 1,
+      "toeic_level": 650,
+      "topic": "Publishing & Media",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "verb",
+          "word": "uplift"
+        }
+      ],
+      "collocations": [
+        "uplifting messages",
+        "uplifting stories"
+      ],
+      "confusing_pairs": [],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "guidance",
+      "ipa": "/ˈɡaɪ.dəns/",
+      "pos": "noun",
+      "meaning_vn": "sự hướng dẫn, chỉ dẫn",
+      "definition_en": "help and advice about how to do something",
+      "frequency_count": 1,
+      "toeic_level": 450,
+      "topic": "Office & Administration",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "verb",
+          "word": "guide"
+        }
+      ],
+      "collocations": [
+        "provide guidance",
+        "under the guidance of"
+      ],
+      "confusing_pairs": [],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "contracted",
+      "ipa": "/kənˈtræk.tɪd/",
+      "pos": "verb (past)",
+      "meaning_vn": "được ký hợp đồng làm việc",
+      "definition_en": "agreed to do something in a formal legal document",
+      "frequency_count": 1,
+      "toeic_level": 650,
+      "topic": "Contracts & HR",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "noun",
+          "word": "contract"
+        },
+        {
+          "pos": "noun",
+          "word": "contractor"
+        }
+      ],
+      "collocations": [
+        "contracted to write",
+        "sign a contract"
+      ],
+      "confusing_pairs": [],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "celebrity",
+      "ipa": "/səˈleb.rə.t̬i/",
+      "pos": "noun",
+      "meaning_vn": "người nổi tiếng",
+      "definition_en": "someone who is famous, especially in the entertainment business",
+      "frequency_count": 2,
+      "toeic_level": 450,
+      "topic": "Entertainment",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "adjective",
+          "word": "celebrated"
+        }
+      ],
+      "collocations": [
+        "celebrity chef",
+        "celebrity cook"
+      ],
+      "confusing_pairs": [],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "provisional",
+      "ipa": "/prəˈvɪʒ.ən.əl/",
+      "pos": "adjective",
+      "meaning_vn": "tạm thời, lâm thời",
+      "definition_en": "for the present time but likely to change",
+      "frequency_count": 3,
+      "toeic_level": 800,
+      "topic": "Contracts & Corporate",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "adverb",
+          "word": "provisionally"
+        }
+      ],
+      "collocations": [
+        "provisional approval",
+        "provisional schedule"
+      ],
+      "confusing_pairs": [],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "accommodate",
+      "ipa": "/əˈkɑː.mə.deɪt/",
+      "pos": "verb",
+      "meaning_vn": "đáp ứng nhu cầu, chứa được",
+      "definition_en": "to provide with something desired, needed, or suited",
+      "frequency_count": 3,
+      "toeic_level": 650,
+      "topic": "Travel & Hospitality",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "noun",
+          "word": "accommodation"
+        }
+      ],
+      "collocations": [
+        "accommodate requests",
+        "accommodate up to 500 people"
+      ],
+      "confusing_pairs": [],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "perspective",
+      "ipa": "/pɚˈspek.tɪv/",
+      "pos": "noun",
+      "meaning_vn": "góc nhìn, quan điểm",
+      "definition_en": "a particular way of considering something",
+      "frequency_count": 3,
+      "toeic_level": 650,
+      "topic": "Management",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [],
+      "collocations": [
+        "from the perspective of",
+        "gain perspective"
+      ],
+      "confusing_pairs": [
+        "perspective (góc nhìn) vs prospective (tiềm năng)"
+      ],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    },
+    {
+      "word": "designated",
+      "ipa": "/ˈdez.ɪɡ.neɪ.tɪd/",
+      "pos": "adjective",
+      "meaning_vn": "được chỉ định, được dành riêng cho",
+      "definition_en": "officially chosen for a special purpose",
+      "frequency_count": 3,
+      "toeic_level": 650,
+      "topic": "Office & Facility",
+      "distractor_flag": false,
+      "is_ocr_verified": true,
+      "word_family": [
+        {
+          "pos": "verb",
+          "word": "designate"
+        },
+        {
+          "pos": "noun",
+          "word": "designation"
+        }
+      ],
+      "collocations": [
+        "designated area",
+        "designated parking"
+      ],
+      "confusing_pairs": [],
+      "context": {
+        "test_number": 1,
+        "part_number": 7,
+        "question_number": 151,
+        "sentence_en": "This new line will feature books promoting healthy lifestyles, memoirs with uplifting messages, and volumes that provide guidance.",
+        "sentence_vn": "Tillford Exalt cũng sẽ xuất bản lịch và thiệp chúc mừng để bổ sung cho các sản phẩm chính."
+      }
+    }
+  ]
+}
