@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Word } from '../types'
+import { FSRSScheduler, FSRSRating } from '../lib/fsrs'
 import { 
   Volume2, 
   RotateCw, 
@@ -9,20 +10,33 @@ import {
   BookmarkCheck,
   CheckCircle2, 
   Sparkles,
-  Search
+  Search,
+  AlertTriangle,
+  Lightbulb,
+  Clock,
+  Settings2,
+  BookOpen
 } from 'lucide-react'
 
 interface VocabProps {
   words: Word[]
   savedWordIds: number[]
   onToggleSave: (id: number) => void
+  onUpdateFSRS: (wordId: number, rating: FSRSRating) => void
 }
 
-export const VocabSection: React.FC<VocabProps> = ({ words, savedWordIds, onToggleSave }) => {
+export const VocabSection: React.FC<VocabProps> = ({ 
+  words, 
+  savedWordIds, 
+  onToggleSave,
+  onUpdateFSRS 
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
   const [filterCategory, setFilterCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [dailyLimit, setDailyLimit] = useState(20)
+  const [showSettings, setShowSettings] = useState(false)
 
   const categories = ['all', ...Array.from(new Set(words.map(w => w.category).filter(Boolean)))]
 
@@ -35,6 +49,10 @@ export const VocabSection: React.FC<VocabProps> = ({ words, savedWordIds, onTogg
 
   const currentWord = filteredWords[currentIndex] || filteredWords[0] || words[0]
   const isSaved = currentWord ? savedWordIds.includes(currentWord.id) : false
+
+  // FSRS calculations for current card
+  const cardFsrs = currentWord?.fsrs || FSRSScheduler.createNewCard()
+  const previewIntervals = FSRSScheduler.previewIntervals(cardFsrs)
 
   const speak = (text: string) => {
     if ('speechSynthesis' in window) {
@@ -60,11 +78,18 @@ export const VocabSection: React.FC<VocabProps> = ({ words, savedWordIds, onTogg
     }
   }
 
+  const handleRate = (rating: FSRSRating) => {
+    if (!currentWord) return
+    onUpdateFSRS(currentWord.id, rating)
+    // Chuyển thẻ tiếp theo
+    handleNext()
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Top Filter and Search Bar */}
+      {/* 1. TOP BAR: FILTERS, SEARCH & FSRS SETTINGS */}
       <div className="bg-white p-5 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Categories pills */}
+        {/* Category pills */}
         <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
           {categories.map((cat) => (
             <button
@@ -85,44 +110,105 @@ export const VocabSection: React.FC<VocabProps> = ({ words, savedWordIds, onTogg
           ))}
         </div>
 
-        {/* Search Input */}
-        <div className="relative w-full md:w-64">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value)
-              setCurrentIndex(0)
-            }}
-            placeholder="Tìm từ vựng, nghĩa tiếng Việt..."
-            className="w-full pl-9 pr-3 py-2 bg-[#f8fafc] border border-slate-200 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white transition-all"
-          />
+        {/* Right tools */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          {/* Search Input */}
+          <div className="relative flex-1 md:w-56">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value)
+                setCurrentIndex(0)
+              }}
+              placeholder="Tìm từ vựng ETS..."
+              className="w-full pl-9 pr-3 py-2 bg-[#f8fafc] border border-slate-200 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white transition-all"
+            />
+          </div>
+
+          {/* FSRS Settings Toggle */}
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className={`p-2.5 rounded-2xl border transition-colors cursor-pointer ${
+              showSettings ? 'bg-[#0284c7] text-white border-[#0284c7]' : 'bg-[#f8fafc] text-slate-600 border-slate-200 hover:bg-[#f0f9ff]'
+            }`}
+            title="Tùy chỉnh thuật toán FSRS / Anki"
+          >
+            <Settings2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
+
+      {/* FSRS Daily Settings Panel (Expandable) */}
+      {showSettings && (
+        <div className="bg-[#f0f9ff] border border-[#bae6fd] p-5 rounded-3xl animate-in fade-in slide-in-from-top-2 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-[#0284c7]" />
+            <div>
+              <h4 className="text-xs font-bold text-slate-800">Cấu hình thuật toán FSRS / Anki</h4>
+              <p className="text-[11px] text-slate-500">Giới hạn số thẻ ôn & phát hiện từ khó nhớ (Leech Detection)</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-slate-600">Giới hạn từ mới/ngày:</span>
+            <div className="flex items-center gap-1">
+              {[10, 20, 30, 50].map(val => (
+                <button
+                  key={val}
+                  onClick={() => setDailyLimit(val)}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    dailyLimit === val
+                      ? 'bg-[#0284c7] text-white shadow-xs'
+                      : 'bg-white text-slate-600 border border-slate-200'
+                  }`}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {currentWord ? (
         <div className="flex flex-col items-center">
           {/* Header of card status */}
           <div className="w-full flex justify-between items-center text-xs text-slate-500 mb-3 px-2">
-            <span className="font-semibold">
-              Thẻ <span className="text-[#0284c7] font-bold">{currentIndex + 1}</span> / {filteredWords.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">
+                Thẻ <span className="text-[#0284c7] font-bold">{currentIndex + 1}</span> / {filteredWords.length}
+              </span>
+              {cardFsrs.isLeech && (
+                <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full border border-rose-200">
+                  <AlertTriangle className="w-3 h-3" /> Từ hay quên (Leech)
+                </span>
+              )}
+            </div>
+
             <span className="flex items-center gap-1.5 text-sky-600 font-bold bg-[#e0f2fe] px-3 py-1 rounded-full text-[11px]">
-              <Sparkles className="w-3.5 h-3.5" /> Chạm vào thẻ hoặc bấm nút để lật nghĩa
+              <Sparkles className="w-3.5 h-3.5" /> Chạm vào thẻ để lật nghĩa & ngữ cảnh ETS
             </span>
           </div>
 
           {/* Flashcard Box */}
           <div
             onClick={() => setIsFlipped(!isFlipped)}
-            className="w-full min-h-[380px] bg-white rounded-3xl p-8 md:p-10 border border-[#e2e8f0] shadow-xl shadow-slate-100 cursor-pointer transition-all duration-300 hover:border-sky-300 hover:shadow-sky-50 relative flex flex-col justify-between select-none"
+            className="w-full min-h-[420px] bg-white rounded-3xl p-8 md:p-10 border border-[#e2e8f0] shadow-xl shadow-slate-100 cursor-pointer transition-all duration-300 hover:border-sky-300 hover:shadow-sky-50 relative flex flex-col justify-between select-none"
           >
             {/* Top Row: Category badge & Actions */}
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold px-3 py-1.5 bg-[#f0f9ff] text-[#0284c7] border border-[#bae6fd] rounded-xl uppercase tracking-wider">
-                {currentWord.category || 'TOEIC ETS 2023'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold px-3 py-1.5 bg-[#f0f9ff] text-[#0284c7] border border-[#bae6fd] rounded-xl uppercase tracking-wider">
+                  {currentWord.category || 'TOEIC ETS 2023'}
+                </span>
+                {currentWord.frequency && (
+                  <span className="text-[11px] font-bold px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl">
+                    🔥 Tần suất: {currentWord.frequency} lần
+                  </span>
+                )}
+              </div>
 
               <div className="flex items-center gap-2">
                 {/* Audio Button */}
@@ -169,7 +255,7 @@ export const VocabSection: React.FC<VocabProps> = ({ words, savedWordIds, onTogg
                   </p>
 
                   {/* Collocations preview */}
-                  {currentWord.collocations && (
+                  {currentWord.collocations && currentWord.collocations.length > 0 && (
                     <div className="mt-6 flex flex-wrap justify-center gap-2">
                       {currentWord.collocations.map((col, idx) => (
                         <span key={idx} className="text-xs px-3 py-1 bg-[#f8fafc] border border-slate-200 text-slate-600 rounded-xl font-medium">
@@ -180,37 +266,111 @@ export const VocabSection: React.FC<VocabProps> = ({ words, savedWordIds, onTogg
                   )}
 
                   <div className="mt-8 text-xs text-slate-400 flex items-center justify-center gap-1.5">
-                    <RotateCw className="w-3.5 h-3.5 text-sky-500" /> Bấm để lật xem định nghĩa tiếng Việt & ví dụ ETS
+                    <RotateCw className="w-3.5 h-3.5 text-sky-500" /> Bấm để lật xem định nghĩa, ngữ cảnh ETS & mẹo nhớ
                   </div>
                 </div>
               ) : (
-                <div className="space-y-5 animate-in fade-in duration-200">
+                <div className="space-y-4 animate-in fade-in duration-200 text-left max-w-2xl mx-auto">
+                  {/* Meaning Box */}
                   <div className="inline-block px-5 py-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-2xl">
                     <h4 className="text-2xl md:text-3xl font-extrabold">{currentWord.meaning_vn}</h4>
                   </div>
 
-                  {currentWord.example_en && (
-                    <div className="p-5 bg-[#f8fafc] rounded-2xl border border-slate-200 text-left space-y-2 mt-4 max-w-2xl mx-auto shadow-inner">
-                      <p className="text-sm font-bold text-slate-800 leading-relaxed">
-                        "{currentWord.example_en}"
+                  {/* Ngữ cảnh gốc ETS 2023 */}
+                  {currentWord.sentence_en && (
+                    <div className="p-4 bg-[#f8fafc] rounded-2xl border border-slate-200 space-y-1.5 shadow-inner">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-sky-700 uppercase">
+                        <BookOpen className="w-3.5 h-3.5" /> Ngữ cảnh gốc đề ETS 2023 (Test {currentWord.ets_source_test || 1} • Part {currentWord.ets_source_part || 5})
+                      </div>
+                      <p className="text-xs font-bold text-slate-800 leading-relaxed">
+                        "{currentWord.sentence_en}"
                       </p>
-                      {currentWord.example_vn && (
+                      {currentWord.sentence_vn && (
                         <p className="text-xs text-slate-500 leading-relaxed">
-                          → {currentWord.example_vn}
+                          → {currentWord.sentence_vn}
                         </p>
                       )}
+                    </div>
+                  )}
+
+                  {/* Mẹo nhớ Memrise (Mnemonic) */}
+                  {currentWord.mnemonic && (
+                    <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2.5 text-xs text-amber-900">
+                      <Lightbulb className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Mẹo nhớ siêu tốc (Mnemonic):</strong> {currentWord.mnemonic}
+                      </div>
                     </div>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Bottom Row */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5 font-medium text-slate-500">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Xuất hiện thường xuyên trong ETS 2023
-              </span>
-              <span className="font-medium text-sky-600">Phím mũi tên / Click để chuyển thẻ</span>
+            {/* Bottom Row: FSRS 4 RATINGS (Again / Hard / Good / Easy) */}
+            <div className="pt-4 border-t border-slate-100">
+              {isFlipped ? (
+                <div className="space-y-2">
+                  <div className="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Đánh giá mức nhớ (FSRS Anki Scheduler)
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {/* 1. Again (Quên) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRate(1)
+                      }}
+                      className="p-3 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex flex-col items-center transition-all cursor-pointer"
+                    >
+                      <span className="text-xs font-black">Quên</span>
+                      <span className="text-[10px] font-mono mt-0.5 opacity-80">{previewIntervals[1].intervalText}</span>
+                    </button>
+
+                    {/* 2. Hard (Khó) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRate(2)
+                      }}
+                      className="p-3 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex flex-col items-center transition-all cursor-pointer"
+                    >
+                      <span className="text-xs font-black">Khó</span>
+                      <span className="text-[10px] font-mono mt-0.5 opacity-80">{previewIntervals[2].intervalText}</span>
+                    </button>
+
+                    {/* 3. Good (Được) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRate(3)
+                      }}
+                      className="p-3 rounded-2xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 flex flex-col items-center transition-all cursor-pointer"
+                    >
+                      <span className="text-xs font-black">Được</span>
+                      <span className="text-[10px] font-mono mt-0.5 opacity-80">{previewIntervals[3].intervalText}</span>
+                    </button>
+
+                    {/* 4. Easy (Dễ) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRate(4)
+                      }}
+                      className="p-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 flex flex-col items-center transition-all cursor-pointer"
+                    >
+                      <span className="text-xs font-black">Dễ</span>
+                      <span className="text-[10px] font-mono mt-0.5 opacity-80">{previewIntervals[4].intervalText}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span className="flex items-center gap-1.5 font-medium text-slate-500">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Xuất hiện thường xuyên trong ETS 2023
+                  </span>
+                  <span className="font-medium text-sky-600">Lật thẻ để xem các mức ôn tập FSRS</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -226,7 +386,7 @@ export const VocabSection: React.FC<VocabProps> = ({ words, savedWordIds, onTogg
               onClick={() => setIsFlipped(!isFlipped)}
               className="px-8 py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-2xl shadow-md shadow-sky-200 transition-all flex items-center gap-2 cursor-pointer"
             >
-              <RotateCw className="w-4 h-4" /> {isFlipped ? 'Xem lại từ vựng' : 'Lật xem nghĩa tiếng Việt'}
+              <RotateCw className="w-4 h-4" /> {isFlipped ? 'Xem lại từ vựng' : 'Lật xem nghĩa tiếng Việt & FSRS'}
             </button>
             <button
               onClick={handleNext}

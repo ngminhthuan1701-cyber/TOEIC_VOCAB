@@ -14,6 +14,7 @@ import { ReadingSection } from './components/ReadingSection'
 import { NotebookView } from './components/NotebookView'
 import { QuizView } from './components/QuizView'
 import { ProgressView } from './components/ProgressView'
+import { FSRSScheduler, FSRSRating } from './lib/fsrs'
 
 const INITIAL_FOLDERS: WordFolder[] = [
   { id: 'f-important', name: 'Từ vựng cốt lõi ETS', icon: '⭐', color: '#0284c7', createdAt: '2026-10-10' },
@@ -104,6 +105,27 @@ export function App() {
     setWords(prev => prev.map(w => w.id === wordId ? { ...w, memoryLevel: level } : w))
   }
 
+  // Cập nhật thẻ theo thuật toán FSRS (Again, Hard, Good, Easy)
+  const handleUpdateFSRS = (wordId: number, rating: FSRSRating) => {
+    setWords(prev => prev.map(w => {
+      if (w.id === wordId) {
+        const currentFsrs = w.fsrs || FSRSScheduler.createNewCard()
+        const updatedFsrs = FSRSScheduler.reviewCard(currentFsrs, rating)
+        return {
+          ...w,
+          fsrs: updatedFsrs
+        }
+      }
+      return w
+    }))
+
+    // Tăng nhẹ điểm kinh nghiệm XP & tiến độ
+    setUserStats(prev => ({
+      ...prev,
+      dailyGoalDone: Math.min(prev.dailyGoalTotal, prev.dailyGoalDone + 1)
+    }))
+  }
+
   return (
     <div className="min-h-screen bg-[#f4f9fd] flex text-slate-800 font-sans antialiased selection:bg-sky-500 selection:text-white">
       {/* 1. Left Sidebar (Pastel Blue UI Theme) */}
@@ -132,6 +154,7 @@ export function App() {
               words={words} 
               savedWordIds={savedWordIds} 
               onToggleSave={handleToggleSave} 
+              onUpdateFSRS={handleUpdateFSRS}
             />
           )}
 
