@@ -14,6 +14,8 @@ import { ReadingSection } from './components/ReadingSection'
 import { NotebookView } from './components/NotebookView'
 import { QuizView } from './components/QuizView'
 import { ProgressView } from './components/ProgressView'
+import { GamificationView } from './components/GamificationView'
+import { GamificationState } from './types/gamification'
 import { FSRSScheduler, FSRSRating } from './lib/fsrs'
 
 const INITIAL_FOLDERS: WordFolder[] = [
@@ -36,6 +38,22 @@ export function App() {
   const [questions, setQuestions] = useState<Question[]>(COMPREHENSIVE_QUESTIONS)
   const [savedWordIds, setSavedWordIds] = useState<number[]>([1, 2, 7, 8, 13, 14, 19, 20]) // 8 words in notebook
   const [userStats, setUserStats] = useState<UserStats>(INITIAL_USER_STATS)
+
+  const [gamification, setGamification] = useState<GamificationState>({
+    xp: 1380,
+    level: 5,
+    streakDays: 5,
+    streakFreezeCount: 2,
+    lastActiveDate: '2026-10-10',
+    dailyCardsReviewed: 16,
+    dailyCardsTarget: 20,
+    badges: [
+      { id: 'b1', title: 'Tập sự ETS', description: 'Hoàn thành 50 từ vựng đầu tiên', icon: '🌱', isUnlocked: true, progress: 100 },
+      { id: 'b2', title: 'Chiến binh 7 Ngày', description: 'Duy trì streak 7 ngày liên tục', icon: '🔥', isUnlocked: false, progress: 71 },
+      { id: 'b3', title: 'Bậc thầy Part 7', description: 'Thuộc vững 100 từ xuất hiện trong Part 7', icon: '🏆', isUnlocked: false, progress: 45 },
+      { id: 'b4', title: 'Siêu phản xạ', description: 'Đạt dưới 15s trong Match Mode', icon: '⚡', isUnlocked: true, progress: 100 },
+    ]
+  })
 
   // Fetch words & questions from Supabase if online
   useEffect(() => {
@@ -184,6 +202,25 @@ export function App() {
           {currentTab === 'quiz' && (
             <QuizView 
               words={words} 
+            />
+          )}
+
+          {currentTab === 'gamification' && (
+            <GamificationView 
+              gamification={gamification}
+              onUseStreakFreeze={() => {
+                setGamification(prev => ({
+                  ...prev,
+                  streakFreezeCount: Math.max(0, prev.streakFreezeCount - 1)
+                }))
+              }}
+              onClaimDailyReward={() => {
+                setGamification(prev => ({
+                  ...prev,
+                  xp: prev.xp + 50,
+                  dailyCardsReviewed: prev.dailyCardsTarget
+                }))
+              }}
             />
           )}
 

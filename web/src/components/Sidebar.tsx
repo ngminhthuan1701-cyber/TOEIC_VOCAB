@@ -10,7 +10,8 @@ import {
   Settings, 
   HelpCircle,
   Zap,
-  Bookmark
+  Bookmark,
+  Flame
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab, sav
     { id: 'reading', label: 'Luyện đề ETS 2023', icon: FileText, badge: 'Part 5, 6, 7' },
     { id: 'notebook', label: 'Sổ tay từ đã lưu', icon: Bookmark, badge: savedCount > 0 ? `${savedCount}` : undefined },
     { id: 'quiz', label: 'Luyện phản xạ nhanh', icon: BrainCircuit },
+    { id: 'gamification', label: 'Streak & Đua Top', icon: Flame, badge: '5 ngày 🔥' },
     { id: 'progress', label: 'Tiến độ & Mục tiêu', icon: TrendingUp },
     { id: 'ai-coach', label: 'TOEIC AI Coach', icon: Sparkles, highlight: true },
     { id: 'materials', label: 'Tài liệu khoá học', icon: FolderCheck },
