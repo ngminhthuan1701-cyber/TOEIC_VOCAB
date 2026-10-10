@@ -8,6 +8,19 @@ export interface Word {
   example_en?: string
   example_vn?: string
   collocations?: string[]
+  folderId?: string // Thuộc bộ sổ tay nào
+  memoryLevel?: number // 1 -> 5 (Spaced Repetition)
+  lastReviewed?: string
+  nextReviewDate?: string
+}
+
+export interface WordFolder {
+  id: string
+  name: string
+  icon: string
+  color: string
+  description?: string
+  createdAt: string
 }
 
 export interface Question {

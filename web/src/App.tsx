@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
-import { Word, Question, UserStats } from './types'
+import { Word, Question, UserStats, WordFolder } from './types'
 import { 
   COMPREHENSIVE_WORDS, 
   COMPREHENSIVE_QUESTIONS, 
@@ -13,13 +13,28 @@ import { VocabSection } from './components/VocabSection'
 import { ReadingSection } from './components/ReadingSection'
 import { NotebookView } from './components/NotebookView'
 import { QuizView } from './components/QuizView'
+import { ProgressView } from './components/ProgressView'
+
+const INITIAL_FOLDERS: WordFolder[] = [
+  { id: 'f-important', name: 'Từ vựng cốt lõi ETS', icon: '⭐', color: '#0284c7', createdAt: '2026-10-10' },
+  { id: 'f-traps', name: 'Bẫy hay sai Part 5 & 7', icon: '⚠️', color: '#f59e0b', createdAt: '2026-10-10' },
+  { id: 'f-business', name: 'Thuật ngữ Hợp đồng & Tài chính', icon: '💼', color: '#10b981', createdAt: '2026-10-10' }
+]
 
 export function App() {
   const [currentTab, setCurrentTab] = useState<string>('dashboard')
-  const [words, setWords] = useState<Word[]>(COMPREHENSIVE_WORDS)
+  const [words, setWords] = useState<Word[]>(() => {
+    // Assign default folderId and memoryLevel to comprehensive words
+    return COMPREHENSIVE_WORDS.map((w, idx) => ({
+      ...w,
+      folderId: idx < 8 ? 'f-important' : idx < 16 ? 'f-business' : 'f-traps',
+      memoryLevel: (idx % 5) + 1
+    }))
+  })
+  const [folders, setFolders] = useState<WordFolder[]>(INITIAL_FOLDERS)
   const [questions, setQuestions] = useState<Question[]>(COMPREHENSIVE_QUESTIONS)
-  const [savedWordIds, setSavedWordIds] = useState<number[]>([1, 7, 13]) // Default 3 bookmarked words
-  const [userStats] = useState<UserStats>(INITIAL_USER_STATS)
+  const [savedWordIds, setSavedWordIds] = useState<number[]>([1, 2, 7, 8, 13, 14, 19, 20]) // 8 words in notebook
+  const [userStats, setUserStats] = useState<UserStats>(INITIAL_USER_STATS)
 
   // Fetch words & questions from Supabase if online
   useEffect(() => {
@@ -31,7 +46,11 @@ export function App() {
           .order('id', { ascending: true })
 
         if (!vocabErr && vocabData && vocabData.length > 0) {
-          setWords(vocabData)
+          setWords(vocabData.map((w: any) => ({
+            ...w,
+            folderId: 'f-important',
+            memoryLevel: 2
+          })))
         }
 
         const { data: qData, error: qErr } = await supabase
@@ -56,6 +75,33 @@ export function App() {
         ? prev.filter(id => id !== wordId) 
         : [...prev, wordId]
     )
+  }
+
+  // Add new custom word to notebook
+  const handleAddWord = (newWordData: Omit<Word, 'id'>) => {
+    const newId = Date.now()
+    const completeWord: Word = {
+      ...newWordData,
+      id: newId
+    }
+    setWords(prev => [completeWord, ...prev])
+    setSavedWordIds(prev => [newId, ...prev])
+
+    // Update stats
+    setUserStats(prev => ({
+      ...prev,
+      vocabLearned: prev.vocabLearned + 1
+    }))
+  }
+
+  // Create new folder
+  const handleCreateFolder = (newFolder: WordFolder) => {
+    setFolders(prev => [...prev, newFolder])
+  }
+
+  // Update memory level (1 to 5)
+  const handleUpdateMemoryLevel = (wordId: number, level: number) => {
+    setWords(prev => prev.map(w => w.id === wordId ? { ...w, memoryLevel: level } : w))
   }
 
   return (
@@ -98,9 +144,12 @@ export function App() {
           {currentTab === 'notebook' && (
             <NotebookView 
               words={words} 
+              folders={folders}
               savedWordIds={savedWordIds} 
               onRemoveSave={handleToggleSave} 
-              onNavigateVocab={() => setCurrentTab('vocab')} 
+              onAddWord={handleAddWord}
+              onCreateFolder={handleCreateFolder}
+              onUpdateMemoryLevel={handleUpdateMemoryLevel}
             />
           )}
 
@@ -111,21 +160,12 @@ export function App() {
           )}
 
           {currentTab === 'progress' && (
-            <div className="bg-white p-8 rounded-3xl border border-[#e2e8f0] shadow-sm text-center max-w-2xl mx-auto space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-[#e0f2fe] text-[#0284c7] text-2xl flex items-center justify-center mx-auto">
-                📈
-              </div>
-              <h3 className="text-xl font-black text-slate-800">Báo cáo tiến độ chi tiết</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Hệ thống đang đồng bộ kết quả làm bài của bạn với Supabase. Bạn đã học {userStats.vocabLearned} từ vựng và hoàn thành {userStats.readingQuestionsDone} câu đọc hiểu ETS 2023!
-              </p>
-              <button 
-                onClick={() => setCurrentTab('dashboard')}
-                className="px-6 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-2xl shadow-sm cursor-pointer"
-              >
-                Quay lại Tổng quan
-              </button>
-            </div>
+            <ProgressView 
+              stats={userStats} 
+              words={words} 
+              savedWordIds={savedWordIds} 
+              onNavigateTab={(tab) => setCurrentTab(tab)} 
+            />
           )}
 
           {currentTab === 'ai-coach' && (
