@@ -522,6 +522,10 @@ const Store = {
       state.words = rMap;
       state.passages = pMap;
 
+      if (Object.keys(state.words).length < 500) {
+        autoSeedToeic600();
+      }
+
       if (profRes.data) {
         state.meta.username = profRes.data.username || '';
         state.meta.newPerDay = profRes.data.new_per_day || 15;
@@ -1777,6 +1781,53 @@ if (searchInput) {
   });
 }
 
+window.autoSeedToeic600 = function() {
+  const topics = window.TOEIC_600_TOPICS || [];
+  if (!topics.length) return false;
+
+  const existingWords = new Set(Object.values(state.words).map(w => norm(w.word)));
+  const now = Date.now();
+  const toAdd = [];
+  let idx = 0;
+
+  topics.forEach(top => {
+    top.words.forEach(w => {
+      if (!existingWords.has(norm(w.word))) {
+        const id = 't600-' + top.id + '-' + (idx++);
+        const wordObj = {
+          id: id,
+          word: w.word,
+          pos: w.pos,
+          ipa: w.ipa,
+          meaning: w.meaning,
+          example: w.example,
+          exampleVi: w.exampleVi,
+          tag: w.tag,
+          img: w.img,
+          reps: 0,
+          interval: 0,
+          ease: 2.5,
+          lapses: 0,
+          due: 0,
+          last: 0,
+          created: now + idx
+        };
+        state.words[id] = wordObj;
+        toAdd.push(wordObj);
+      }
+    });
+  });
+
+  if (toAdd.length > 0) {
+    Store.saveLocal();
+    if (currentUser && sb) {
+      Store.saveWords(toAdd);
+    }
+    return true;
+  }
+  return false;
+};
+
 /* ---------- Global events ---------- */
 document.addEventListener('click', e => {
   const tok = e.target.closest('.tok'); if (tok) return selectToken(tok);
@@ -1955,6 +2006,9 @@ if (sob) sob.addEventListener('click', async () => {
 
 /* ---------- Boot ---------- */
 Store.loadLocal();
+if (Object.keys(state.words).length < 500) {
+  autoSeedToeic600();
+}
 renderAll();
 Store.connect();
 initAI();
