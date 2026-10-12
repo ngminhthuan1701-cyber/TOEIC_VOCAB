@@ -201,6 +201,15 @@ dialog::backdrop{background:rgba(10,15,30,.45)}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
+/* Typed Character Diff Comparison Highlight */
+.diff-box{margin:10px auto;max-width:440px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;font-family:'Be Vietnam Pro',sans-serif}
+.diff-row{display:flex;align-items:center;margin:6px 0;font-size:15px;gap:10px}
+.diff-label{font-size:12px;text-transform:uppercase;font-weight:700;color:var(--muted);width:70px;flex:none}
+.diff-chars{font-family:'Fraunces',Georgia,serif;font-size:22px;letter-spacing:1.5px;display:inline-flex;flex-wrap:wrap;align-items:center}
+.char-correct{color:var(--good);font-weight:700}
+.char-wrong{color:var(--bad);background:rgba(220,38,38,.12);border-radius:4px;padding:0 2px;text-decoration:underline;text-decoration-color:var(--bad);text-decoration-thickness:2px;font-weight:700}
+.char-missing{color:var(--muted);opacity:.5;border-bottom:2px dashed var(--muted);padding:0 3px}
+
 /* 600 TOEIC Dialog styles */
 #toeic600Dlg { width: min(720px, calc(100vw - 20px)); max-height: calc(100vh - 40px); }
 .t600-header { position: sticky; top: 0; background: var(--surface); padding-bottom: 12px; border-bottom: 1px solid var(--line); z-index: 2; margin-bottom: 12px; }
@@ -380,6 +389,64 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 
 function speak(text) {
   try { if (!('speechSynthesis' in window)) return; const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = .9; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {}
+}
+
+function renderDiffHighlight(typed, target) {
+  const normT = (typed || '').trim().toLowerCase();
+  const normW = (target || '').trim().toLowerCase();
+  const m = normT.length, n = normW.length;
+  const rawT = (typed || '').trim();
+  const rawW = (target || '').trim();
+  
+  const dp = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (normT[i-1] === normW[j-1]) dp[i][j] = dp[i-1][j-1];
+      else dp[i][j] = 1 + Math.min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  let i = m, j = n;
+  const ops = [];
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && normT[i-1] === normW[j-1]) {
+      ops.push({ type: 'equal', charT: rawT[i-1], charW: rawW[j-1] });
+      i--; j--;
+    } else if (i > 0 && j > 0 && dp[i][j] === dp[i-1][j-1] + 1) {
+      ops.push({ type: 'replace', charT: rawT[i-1], charW: rawW[j-1] });
+      i--; j--;
+    } else if (i > 0 && dp[i][j] === dp[i-1][j] + 1) {
+      ops.push({ type: 'delete', charT: rawT[i-1] });
+      i--;
+    } else {
+      ops.push({ type: 'insert', charW: rawW[j-1] });
+      j--;
+    }
+  }
+  ops.reverse();
+
+  let htmlTyped = '';
+  let htmlTarget = '';
+  ops.forEach(op => {
+    if (op.type === 'equal') {
+      htmlTyped += `<span class="char-correct">${esc(op.charT)}</span>`;
+      htmlTarget += `<span class="char-correct">${esc(op.charW)}</span>`;
+    } else if (op.type === 'replace') {
+      htmlTyped += `<span class="char-wrong" title="Ký tự sai">${esc(op.charT)}</span>`;
+      htmlTarget += `<span class="char-correct">${esc(op.charW)}</span>`;
+    } else if (op.type === 'delete') {
+      htmlTyped += `<span class="char-wrong" title="Ký tự thừa">${esc(op.charT)}</span>`;
+    } else if (op.type === 'insert') {
+      htmlTyped += `<span class="char-missing" title="Thiếu ký tự">_</span>`;
+      htmlTarget += `<span class="char-correct">${esc(op.charW)}</span>`;
+    }
+  });
+
+  return `<div class="diff-box">` +
+    `<div class="diff-row"><span class="diff-label">Bạn gõ:</span><span class="diff-chars">${htmlTyped}</span></div>` +
+    `<div class="diff-row"><span class="diff-label">Từ đúng:</span><span class="diff-chars">${htmlTarget}</span></div>` +
+    `</div>`;
 }
 
 /* ---------- State & storage ---------- */
@@ -946,7 +1013,16 @@ function renderReview() {
     : `<p class="headword" style="font-size:clamp(34px,8vw,52px)">${esc(w.word)}</p><div class="ipa" style="margin-bottom:14px">${esc(w.ipa || '')}<button class="icon-btn" data-act="speak" aria-label="Nghe phát âm">🔊</button></div>`;
   const grades = [[0,'Quên','var(--bad)'],[1,'Khó','var(--hard)'],[2,'Nhớ','var(--good)'],[3,'Dễ','var(--easy)']]
     .map(([g, l, c]) => `<button class="grade${session.typed && ((session.typed.ok && g === 2) || (!session.typed.ok && g === 0)) ? ' suggest' : ''}" style="--c:${c}" data-grade="${g}"><b>${l}</b><small>${ivLabel(schedule(w, g).interval)}</small></button>`).join('');
-  const typedRes = session.typed ? `<p class="typed-res ${session.typed.ok ? 'ok' : 'no'}">${session.typed.ok ? 'Bạn gõ đúng.' : session.typed.val ? `Bạn gõ: <s>${esc(session.typed.val)}</s>` : 'Bạn chọn không nhớ.'}</p>` : '';
+  let typedRes = '';
+  if (session.typed) {
+    if (session.typed.ok) {
+      typedRes = `<p class="typed-res ok">✓ Chính xác: <span style="font-family:Fraunces,Georgia,serif;font-size:22px">${esc(w.word)}</span></p>`;
+    } else if (session.typed.val) {
+      typedRes = `<div style="margin-bottom:12px"><p class="typed-res no" style="margin-bottom:4px">Chưa chính xác:</p>${renderDiffHighlight(session.typed.val, w.word)}</div>`;
+    } else {
+      typedRes = `<p class="typed-res no">Bạn chọn không nhớ.</p>`;
+    }
+  }
   const typeForm = `<div class="answer"><input id="revAns" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Gõ từ tiếng Anh"><button class="btn primary" data-act="checktyped">Kiểm tra</button></div><div class="row" style="margin-top:10px"><button class="btn small" data-act="nomem">Không nhớ</button></div>`;
   el.innerHTML = `
     <div class="session-bar"><span>Còn ${left} thẻ</span><div class="meter"><i style="width:${pct}%"></i></div>
@@ -1327,7 +1403,19 @@ function checkTyped() {
   logReview(); Store.saveMeta();
   speak(w.word);
   const fb = $('#fb'); fb.className = 'feedback ' + (ok ? 'ok' : 'no');
-  fb.innerHTML = (ok ? 'Chính xác: ' : 'Đáp án đúng: ') + `<span style="font-family:Fraunces,Georgia,serif;font-size:20px">${esc(w.word)}</span>` + (pr.mode !== 'type' ? ` <span style="color:var(--muted);font-weight:400">(${esc(w.meaning)})</span>` : '') + `<div style="margin-top:8px;font-weight:400;color:var(--muted);font-size:14px">Nhấn Enter để sang câu tiếp</div>`;
+  if (ok) {
+    fb.innerHTML = `<div>Chính xác: <span style="font-family:Fraunces,Georgia,serif;font-size:22px;color:var(--good)">${esc(w.word)}</span>` +
+      (pr.mode !== 'type' ? ` <span style="color:var(--muted);font-weight:400">(${esc(w.meaning)})</span>` : '') +
+      `</div><div style="margin-top:8px;font-weight:400;color:var(--muted);font-size:14px">Nhấn Enter để sang câu tiếp</div>`;
+  } else {
+    fb.innerHTML = `<div><span style="font-size:16px">Chưa đúng! So sánh từ bạn đã gõ:</span>` +
+      renderDiffHighlight(v, w.word) +
+      `<div style="font-weight:400;color:var(--muted);margin-top:4px">Nghĩa: <b>${esc(w.meaning || '')}</b></div>` +
+      `<div style="margin-top:10px;font-weight:400;color:var(--muted);font-size:14px">Nhấn Enter hoặc nút bên dưới để tiếp tục</div>` +
+      ` <button class="btn small" data-act="next" style="margin-top:6px">Câu tiếp</button></div>`;
+    const btn = fb.querySelector('button');
+    if (btn) btn.focus();
+  }
   $('#ans').readOnly = true;
 }
 function nextQ() { const r = pr.run; r.i++; r.answered = false; r.opts = null; renderRun(); }
