@@ -1244,8 +1244,15 @@ function seed() {
 }
 
 /* ---------- Practice ---------- */
-let pr = { mode: 'quiz', scope: '', run: null };
-const MODES = { quiz: ['Chọn nghĩa đúng', 'Xem từ, chọn 1 trong 4 nghĩa'], type: ['Gõ từ theo nghĩa', 'Xem nghĩa, viết lại từ tiếng Anh'], listen: ['Nghe và viết', 'Nghe phát âm, viết đúng chính tả'], picture: ['Nhìn hình đoán từ', 'Xem hình minh họa, viết từ tiếng Anh'], cloze: ['Điền từ vào câu', 'Câu ví dụ bị che một từ, chọn từ đúng như Part 5'] };
+let pr = { mode: 'flashcard', scope: '', run: null };
+const MODES = {
+  flashcard: ['Lật thẻ Flashcard', 'Xem từ, lật xem nghĩa & hình, chuyển từ tự do'],
+  quiz: ['Chọn nghĩa đúng', 'Xem từ, chọn 1 trong 4 nghĩa'],
+  type: ['Gõ từ theo nghĩa', 'Xem nghĩa, viết lại từ tiếng Anh'],
+  listen: ['Nghe và viết', 'Nghe phát âm, viết đúng chính tả'],
+  picture: ['Nhìn hình đoán từ', 'Xem hình minh họa, viết từ tiếng Anh'],
+  cloze: ['Điền từ vào câu', 'Câu ví dụ bị che một từ, chọn từ đúng như Part 5']
+};
 function renderPractice() {
   const el = $('#tab-practice');
   if (pr.run) return renderRun();
@@ -1258,7 +1265,7 @@ function renderPractice() {
   }).join('');
   const hardN = all.filter(w => (w.lapses || 0) > 0).length;
   el.innerHTML = `
-    <h2>Luyện tập</h2><p class="lead">10 câu mỗi lượt. Từ bạn làm sai sẽ được đưa vào lượt ôn tiếp theo.</p>
+    <h2>Luyện tập</h2><p class="lead">Chọn bất kỳ bộ từ nào để lật thẻ học trước, hoặc làm bài trắc nghiệm / gõ từ kiểm tra.</p>
     <div class="modes">${Object.entries(MODES).map(([k, [t, d]]) => `<button class="mode" data-mode="${k}" aria-pressed="${pr.mode === k}"><b>${t}</b><span>${d}</span></button>`).join('')}</div>
     <div class="row" style="margin-bottom:8px">
       <label class="dir">Luyện với <select id="scopeSel">
@@ -1266,9 +1273,9 @@ function renderPractice() {
         <option value="learned"${pr.scope==='learned'?' selected':''}>Từ đã học (${all.filter(w=>!isNew(w)).length})</option>
         <option value="hard"${pr.scope==='hard'?' selected':''}>Từ hay quên (${hardN})</option>
         ${tagOpts}</select></label>
-      <button class="btn primary" data-act="startpr"${all.length < 4 ? ' disabled' : ''}>Bắt đầu</button>
+      <button class="btn primary" data-act="startpr"${all.length < 1 ? ' disabled' : ''}>Bắt đầu</button>
     </div>
-    ${all.length < 4 ? '<p class="lead">Cần ít nhất 4 từ trong sổ để luyện tập.</p>' : ''}`;
+    ${all.length < 1 ? '<p class="lead">Chưa có từ nào trong sổ để luyện tập.</p>' : ''}`;
   $('#scopeSel').addEventListener('change', e => { pr.scope = e.target.value; });
   el.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => { pr.mode = b.dataset.mode; renderPractice(); }));
 }
@@ -1294,30 +1301,76 @@ function startPractice() {
     toast(pr.mode === 'picture' ? 'Chưa có từ nào có hình trong phạm vi này.' : 'Không có từ nào trong phạm vi này.');
     return;
   }
-  const items = (pr.scope === 'hard' ? pool.slice(0, 10) : shuffle(pool).slice(0, 10)).map(w => w.id);
-  pr.run = { items, i: 0, score: 0, wrong: [], answered: false, opts: null, scopeTitle };
+  let items = [];
+  if (pr.mode === 'flashcard') {
+    // Với Flashcard: duyệt theo thứ tự gốc của bộ từ (để học trọn vẹn từng bài)
+    items = pool.map(w => w.id);
+  } else {
+    items = (pr.scope === 'hard' ? pool.slice(0, 10) : shuffle(pool).slice(0, 10)).map(w => w.id);
+  }
+  pr.run = { items, i: 0, score: 0, wrong: [], answered: false, opts: null, flipped: false, scopeTitle };
   renderRun();
 }
 function renderRun() {
   const el = $('#tab-practice'); const r = pr.run;
   if (r.i >= r.items.length) {
-    el.innerHTML = `<div class="empty"><h2>${r.score}/${r.items.length} câu đúng</h2>
-      <p class="lead" style="margin-bottom:8px">Phạm vi luyện: <b>${esc(r.scopeTitle || 'Tất cả')}</b></p>
-      ${r.wrong.length ? `<p class="lead">Những từ cần ôn thêm:</p><ul class="hard-list" style="margin-bottom:18px">${r.wrong.map(id => state.words[id]).filter(Boolean).map(w => `<li><b>${esc(w.word)}</b><span>${esc(w.meaning)}</span></li>`).join('')}</ul>` : '<p class="lead">Không sai câu nào. Rất xuất sắc!</p>'}
-      <div class="row"><button class="btn primary" data-act="startpr">Luyện tiếp lượt nữa</button><button class="btn" data-act="endpr">Đổi sổ hoặc cách luyện</button></div></div>`;
+    if (pr.mode === 'flashcard') {
+      el.innerHTML = `<div class="empty"><h2>Đã xem xong tất cả ${r.items.length} thẻ!</h2>
+        <p class="lead" style="margin-bottom:8px">Phạm vi: <b>${esc(r.scopeTitle || 'Tất cả')}</b></p>
+        <p class="lead" style="margin-bottom:18px">Các từ này đã sẵn sàng để hệ thống tự động đưa vào chu kỳ ôn tập hàng ngày.</p>
+        <div class="row">
+          <button class="btn primary" data-act="startpr">Lật lại bộ này</button>
+          <button class="btn" data-act="topracticequiz">Làm trắc nghiệm kiểm tra</button>
+          <button class="btn" data-act="endpr">Đổi bộ khác</button>
+        </div></div>`;
+    } else {
+      el.innerHTML = `<div class="empty"><h2>${r.score}/${r.items.length} câu đúng</h2>
+        <p class="lead" style="margin-bottom:8px">Phạm vi luyện: <b>${esc(r.scopeTitle || 'Tất cả')}</b></p>
+        ${r.wrong.length ? `<p class="lead">Những từ cần ôn thêm:</p><ul class="hard-list" style="margin-bottom:18px">${r.wrong.map(id => state.words[id]).filter(Boolean).map(w => `<li><b>${esc(w.word)}</b><span>${esc(w.meaning)}</span></li>`).join('')}</ul>` : '<p class="lead">Không sai câu nào. Rất xuất sắc!</p>'}
+        <div class="row"><button class="btn primary" data-act="startpr">Luyện tiếp lượt nữa</button><button class="btn" data-act="endpr">Đổi sổ hoặc cách luyện</button></div></div>`;
+    }
     return;
   }
   const w = state.words[r.items[r.i]];
   if (!w) { r.i++; return renderRun(); }
   const head = `<div class="session-bar">
     <span style="display:flex;align-items:center;gap:8px">
-      <span>Câu ${r.i + 1}/${r.items.length}</span>
+      <span>Thẻ ${r.i + 1}/${r.items.length}</span>
       ${r.scopeTitle ? `<span class="chip" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.scopeTitle)}">${esc(r.scopeTitle)}</span>` : ''}
     </span>
-    <div class="meter"><i style="width:${r.i / r.items.length * 100}%"></i></div>
-    <button class="btn small" data-act="endpr">Dừng</button>
+    <div class="meter"><i style="width:${(r.i + 1) / r.items.length * 100}%"></i></div>
+    <button class="btn small" data-act="endpr">Thoát</button>
   </div>`;
-  if (pr.mode === 'cloze') {
+
+  if (pr.mode === 'flashcard') {
+    // Chế độ Lật thẻ Flashcard tự do
+    const pic = imgSrc(w) ? `<img class="pic" src="${esc(imgSrc(w))}" alt="Hình minh họa">` : '';
+    const front = `
+      <div style="cursor:pointer;width:100%" data-act="prflip">
+        ${pic}
+        <p class="headword">${esc(w.word)}</p>
+        <div class="ipa">${w.ipa ? esc(w.ipa) : ''}${w.pos && POS[w.pos] ? ` <span>(${esc(POS[w.pos])})</span>` : ''}
+          <button class="icon-btn" data-act="speakw" data-id="${w.id}" aria-label="Nghe phát âm">🔊</button>
+        </div>
+      </div>
+      <button class="btn primary show-btn" data-act="prflip" style="margin-top:20px">${r.flipped ? 'Ẩn nghĩa' : 'Lật xem nghĩa'}</button>`;
+    const back = `
+      <div class="back" style="margin-top:20px;border-top:1px dashed var(--line);padding-top:18px;width:100%;max-width:520px">
+        <p class="meaning">${esc(w.meaning || '(chưa có nghĩa)')}</p>
+        ${exampleHtml(w)}
+      </div>`;
+    el.innerHTML = head + `
+      <div class="flash">
+        <div class="kind">Lật thẻ từ vựng • Bấm vào thẻ để lật</div>
+        ${front}
+        ${r.flipped ? back : ''}
+      </div>
+      <div class="row" style="justify-content:center;margin-top:18px;gap:12px">
+        <button class="btn" data-act="prprev"${r.i === 0 ? ' disabled' : ''}>← Từ trước</button>
+        <button class="btn primary" data-act="prnext">${r.i === r.items.length - 1 ? 'Hoàn thành' : 'Từ tiếp theo →'}</button>
+      </div>
+      <p class="keys">Phím tắt: <kbd>Space</kbd> để lật thẻ, <kbd>→</kbd> tiếp theo, <kbd>←</kbd> quay lại</p>`;
+  } else if (pr.mode === 'cloze') {
     const c = clozeOf(w);
     if (!c) { r.i++; return renderRun(); }
     if (!r.opts) {
@@ -1418,7 +1471,9 @@ function checkTyped() {
   }
   $('#ans').readOnly = true;
 }
-function nextQ() { const r = pr.run; r.i++; r.answered = false; r.opts = null; renderRun(); }
+function nextQ() { const r = pr.run; r.i++; r.answered = false; r.opts = null; r.flipped = false; renderRun(); }
+function prevQ() { const r = pr.run; if (r && r.i > 0) { r.i--; r.answered = false; r.opts = null; r.flipped = false; renderRun(); } }
+function flipPractice() { const r = pr.run; if (!r) return; r.flipped = !r.flipped; renderRun(); }
 
 async function drawAll(btn) {
   if (!sampleFn) return;
@@ -1979,6 +2034,10 @@ document.addEventListener('click', e => {
   else if (a === 'morenew') { const k = dayKey(); state.meta.newLog[k] = Math.max(0, (state.meta.newLog[k] || 0) - 10); Store.saveMeta(); session = null; renderReview(); updateBadge(); }
   else if (a === 'startpr') { pr.run = null; startPractice(); }
   else if (a === 'endpr') { pr.run = null; renderPractice(); }
+  else if (a === 'prflip') flipPractice();
+  else if (a === 'prnext') nextQ();
+  else if (a === 'prprev') prevQ();
+  else if (a === 'topracticequiz') { pr.mode = 'quiz'; pr.run = null; startPractice(); }
   else if (a === 'next') nextQ();
   else if (a === 'drawall') drawAll(t);
   else if (a === 'export') exportBackup(t);
@@ -2004,9 +2063,15 @@ document.addEventListener('keydown', e => {
   if (current === 'review' && session && session.queue.length) {
     if ((e.key === ' ' || e.key === 'Enter') && !session.flipped) { e.preventDefault(); flip(); }
     else if (session.flipped && ['1','2','3','4'].includes(e.key)) { e.preventDefault(); grade(+e.key - 1); }
-  } else if (current === 'practice' && pr.run && (pr.mode === 'quiz' || pr.mode === 'cloze')) {
-    if (!pr.run.answered && ['1','2','3','4'].includes(e.key)) answerQuiz(+e.key - 1);
-    else if (pr.run.answered && e.key === 'Enter') { e.preventDefault(); nextQ(); }
+  } else if (current === 'practice' && pr.run) {
+    if (pr.mode === 'flashcard') {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipPractice(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); nextQ(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); prevQ(); }
+    } else if (pr.mode === 'quiz' || pr.mode === 'cloze') {
+      if (!pr.run.answered && ['1','2','3','4'].includes(e.key)) answerQuiz(+e.key - 1);
+      else if (pr.run.answered && e.key === 'Enter') { e.preventDefault(); nextQ(); }
+    }
   }
 });
 
