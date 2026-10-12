@@ -1174,7 +1174,12 @@ function renderPractice() {
   const el = $('#tab-practice');
   if (pr.run) return renderRun();
   const all = Object.values(state.words);
-  const tagOpts = tags().map(t => `<option value="${esc(t)}"${pr.scope === 'tag:' + t ? ' selected' : ''}>Bộ ${esc(t)}</option>`).join('');
+  const tagList = tags();
+  const tagOpts = tagList.map(t => {
+    const count = all.filter(w => w.tag === t).length;
+    const isSel = pr.scope === 'tag:' + t || pr.scope === t;
+    return `<option value="tag:${esc(t)}"${isSel ? ' selected' : ''}>Bộ: ${esc(t)} (${count})</option>`;
+  }).join('');
   const hardN = all.filter(w => (w.lapses || 0) > 0).length;
   el.innerHTML = `
     <h2>Luyện tập</h2><p class="lead">10 câu mỗi lượt. Từ bạn làm sai sẽ được đưa vào lượt ôn tiếp theo.</p>
@@ -1182,7 +1187,7 @@ function renderPractice() {
     <div class="row" style="margin-bottom:8px">
       <label class="dir">Luyện với <select id="scopeSel">
         <option value="">Tất cả từ (${all.length})</option>
-        <option value="learned"${pr.scope==='learned'?' selected':''}>Từ đã học</option>
+        <option value="learned"${pr.scope==='learned'?' selected':''}>Từ đã học (${all.filter(w=>!isNew(w)).length})</option>
         <option value="hard"${pr.scope==='hard'?' selected':''}>Từ hay quên (${hardN})</option>
         ${tagOpts}</select></label>
       <button class="btn primary" data-act="startpr"${all.length < 4 ? ' disabled' : ''}>Bắt đầu</button>
@@ -1194,37 +1199,66 @@ function renderPractice() {
 function startPractice() {
   const all = Object.values(state.words);
   let pool = all;
-  if (pr.scope === 'learned') pool = all.filter(w => !isNew(w));
-  else if (pr.scope === 'hard') pool = all.filter(w => (w.lapses || 0) > 0).sort((a, b) => b.lapses - a.lapses);
-  else if (pr.scope.startsWith('tag:')) pool = all.filter(w => w.tag === pr.scope.slice(4));
+  let scopeTitle = 'Tất cả từ';
+  if (pr.scope === 'learned') {
+    pool = all.filter(w => !isNew(w));
+    scopeTitle = 'Từ đã học';
+  } else if (pr.scope === 'hard') {
+    pool = all.filter(w => (w.lapses || 0) > 0).sort((a, b) => b.lapses - a.lapses);
+    scopeTitle = 'Từ hay quên';
+  } else if (pr.scope) {
+    const targetTag = pr.scope.startsWith('tag:') ? pr.scope.slice(4) : pr.scope;
+    pool = all.filter(w => w.tag === targetTag);
+    scopeTitle = targetTag;
+  }
   if (pr.mode === 'quiz') pool = pool.filter(w => w.meaning);
   if (pr.mode === 'picture') pool = pool.filter(w => imgSrc(w));
   if (pr.mode === 'cloze') pool = pool.filter(w => clozeOf(w));
-  if (!pool.length) { toast(pr.mode === 'picture' ? 'Chưa có từ nào có hình trong phạm vi này. Thêm hình trong Sổ từ trước.' : 'Không có từ nào trong phạm vi này.'); return; }
+  if (!pool.length) {
+    toast(pr.mode === 'picture' ? 'Chưa có từ nào có hình trong phạm vi này.' : 'Không có từ nào trong phạm vi này.');
+    return;
+  }
   const items = (pr.scope === 'hard' ? pool.slice(0, 10) : shuffle(pool).slice(0, 10)).map(w => w.id);
-  pr.run = { items, i: 0, score: 0, wrong: [], answered: false, opts: null };
+  pr.run = { items, i: 0, score: 0, wrong: [], answered: false, opts: null, scopeTitle };
   renderRun();
 }
 function renderRun() {
   const el = $('#tab-practice'); const r = pr.run;
   if (r.i >= r.items.length) {
     el.innerHTML = `<div class="empty"><h2>${r.score}/${r.items.length} câu đúng</h2>
-      ${r.wrong.length ? `<p class="lead">Những từ cần ôn thêm:</p><ul class="hard-list" style="margin-bottom:18px">${r.wrong.map(id => state.words[id]).filter(Boolean).map(w => `<li><b>${esc(w.word)}</b><span>${esc(w.meaning)}</span></li>`).join('')}</ul>` : '<p class="lead">Không sai câu nào.</p>'}
-      <div class="row"><button class="btn primary" data-act="startpr">Luyện lượt khác</button><button class="btn" data-act="endpr">Đổi cách luyện</button></div></div>`;
+      <p class="lead" style="margin-bottom:8px">Phạm vi luyện: <b>${esc(r.scopeTitle || 'Tất cả')}</b></p>
+      ${r.wrong.length ? `<p class="lead">Những từ cần ôn thêm:</p><ul class="hard-list" style="margin-bottom:18px">${r.wrong.map(id => state.words[id]).filter(Boolean).map(w => `<li><b>${esc(w.word)}</b><span>${esc(w.meaning)}</span></li>`).join('')}</ul>` : '<p class="lead">Không sai câu nào. Rất xuất sắc!</p>'}
+      <div class="row"><button class="btn primary" data-act="startpr">Luyện tiếp lượt nữa</button><button class="btn" data-act="endpr">Đổi sổ hoặc cách luyện</button></div></div>`;
     return;
   }
   const w = state.words[r.items[r.i]];
   if (!w) { r.i++; return renderRun(); }
-  const head = `<div class="session-bar"><span>Câu ${r.i + 1}/${r.items.length}</span><div class="meter"><i style="width:${r.i / r.items.length * 100}%"></i></div><button class="btn small" data-act="endpr">Dừng</button></div>`;
+  const head = `<div class="session-bar">
+    <span style="display:flex;align-items:center;gap:8px">
+      <span>Câu ${r.i + 1}/${r.items.length}</span>
+      ${r.scopeTitle ? `<span class="chip" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.scopeTitle)}">${esc(r.scopeTitle)}</span>` : ''}
+    </span>
+    <div class="meter"><i style="width:${r.i / r.items.length * 100}%"></i></div>
+    <button class="btn small" data-act="endpr">Dừng</button>
+  </div>`;
   if (pr.mode === 'cloze') {
     const c = clozeOf(w);
     if (!c) { r.i++; return renderRun(); }
     if (!r.opts) {
       const form = c.before.trim() ? c.form : c.form.toLowerCase();
-      const others = shuffle(Object.values(state.words).filter(x => x.id !== w.id && x.word && !/\s/.test(x.word.trim()) && norm(x.word) !== norm(form)));
+      const allWords = Object.values(state.words);
+      const sameTagWords = w.tag ? allWords.filter(x => x.tag === w.tag) : [];
+      let others = shuffle((sameTagWords.length >= 4 ? sameTagWords : allWords).filter(x => x.id !== w.id && x.word && !/\s/.test(x.word.trim()) && norm(x.word) !== norm(form)));
       others.sort((a, b) => (b.pos === w.pos) - (a.pos === w.pos));
       const seen = new Set([norm(form)]); const d = [];
       for (const x of others) { const t = x.word.trim(); if (!seen.has(norm(t))) { seen.add(norm(t)); d.push(t); } if (d.length === 3) break; }
+      if (d.length < 3) {
+        for (const x of shuffle(allWords)) {
+          const t = (x.word || '').trim();
+          if (t && !seen.has(norm(t)) && !/\s/.test(t)) { seen.add(norm(t)); d.push(t); }
+          if (d.length === 3) break;
+        }
+      }
       r.correct = form; r.opts = shuffle([form, ...d]);
     }
     el.innerHTML = head + `<div class="flash"><div class="kind">Chọn từ phù hợp nhất để điền vào chỗ trống</div>
@@ -1233,9 +1267,18 @@ function renderRun() {
       <div class="feedback" id="fb"></div></div>`;
   } else if (pr.mode === 'quiz') {
     if (!r.opts) {
-      const others = shuffle(Object.values(state.words).filter(x => x.id !== w.id && x.meaning && norm(x.meaning) !== norm(w.meaning)));
-      const seen = new Set(); const d = [];
+      const allWords = Object.values(state.words);
+      const sameTagWords = w.tag ? allWords.filter(x => x.tag === w.tag && x.meaning) : [];
+      const candidatePool = sameTagWords.length >= 4 ? sameTagWords : allWords;
+      const others = shuffle(candidatePool.filter(x => x.id !== w.id && x.meaning && norm(x.meaning) !== norm(w.meaning)));
+      const seen = new Set([norm(w.meaning)]); const d = [];
       for (const x of others) { if (!seen.has(norm(x.meaning))) { seen.add(norm(x.meaning)); d.push(x.meaning); } if (d.length === 3) break; }
+      if (d.length < 3) {
+        for (const x of shuffle(allWords)) {
+          if (x.meaning && !seen.has(norm(x.meaning))) { seen.add(norm(x.meaning)); d.push(x.meaning); }
+          if (d.length === 3) break;
+        }
+      }
       r.opts = shuffle([w.meaning, ...d]); r.correct = w.meaning;
     }
     el.innerHTML = head + `<div class="flash"><div class="kind">Chọn nghĩa đúng</div><p class="headword">${esc(w.word)}</p>
