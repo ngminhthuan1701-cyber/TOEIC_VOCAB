@@ -1032,7 +1032,7 @@ function renderReview() {
       ${front}
       ${session.flipped ? `<div class="back">${typedRes}${backTop}${exampleHtml(w)}</div>` : dir === 'type' ? typeForm : `<button class="btn primary show-btn" data-act="flip">Hiện nghĩa</button>`}
     </div>
-    ${session.flipped ? `<div class="grades">${grades}</div><p class="keys">Phím tắt: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> để chấm</p>` : dir === 'type' ? `<p class="keys">Gõ từ rồi nhấn <kbd>Enter</kbd> để kiểm tra</p>` : `<p class="keys">Nhấn <kbd>Space</kbd> để lật thẻ</p>`}`;
+    ${session.flipped ? `<div class="grades">${grades}</div><p class="keys">Phím tắt: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> để chấm • <kbd>S</kbd> hoặc <kbd>R</kbd> nghe phát âm</p>` : dir === 'type' ? `<p class="keys">Gõ từ rồi nhấn <kbd>Enter</kbd> để kiểm tra • <kbd>Ctrl+Space</kbd> nghe lại</p>` : `<p class="keys">Nhấn <kbd>Space</kbd> để lật thẻ • <kbd>S</kbd> nghe phát âm</p>`}`;
   $('#dirSel').addEventListener('change', e => { dir = e.target.value; session.typed = null; renderReview(); });
   const ra = $('#revAns');
   if (ra) { ra.focus(); ra.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); checkReviewTyped(false); } }); }
@@ -1369,7 +1369,7 @@ function renderRun() {
         <button class="btn" data-act="prprev"${r.i === 0 ? ' disabled' : ''}>← Từ trước</button>
         <button class="btn primary" data-act="prnext">${r.i === r.items.length - 1 ? 'Hoàn thành' : 'Từ tiếp theo →'}</button>
       </div>
-      <p class="keys">Phím tắt: <kbd>Space</kbd> để lật thẻ, <kbd>→</kbd> tiếp theo, <kbd>←</kbd> quay lại</p>`;
+      <p class="keys">Phím tắt: <kbd>Space</kbd> để lật thẻ • <kbd>→</kbd> tiếp theo • <kbd>←</kbd> quay lại • <kbd>S</kbd> hoặc <kbd>R</kbd> nghe phát âm</p>`;
   } else if (pr.mode === 'cloze') {
     const c = clozeOf(w);
     if (!c) { r.i++; return renderRun(); }
@@ -2059,7 +2059,21 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]')) return;
   const tag = (e.target.tagName || '').toLowerCase();
-  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+  const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
+  
+  // Phím tắt phát âm: Nhấn 's' hoặc 'r' (khi không ở ô nhập liệu), hoặc 'Ctrl + Space' (kể cả khi đang ở ô nhập liệu)
+  const isPronounceKey = (!isInput && (e.key === 's' || e.key === 'S' || e.key === 'r' || e.key === 'R')) || ((e.ctrlKey || e.metaKey) && (e.key === ' ' || e.key === 's'));
+  if (isPronounceKey) {
+    if (current === 'review' && session && session.queue.length) {
+      const w = state.words[session.queue[0]];
+      if (w) { e.preventDefault(); speak(w.word); return; }
+    } else if (current === 'practice' && pr.run && pr.run.items) {
+      const w = state.words[pr.run.items[pr.run.i]];
+      if (w) { e.preventDefault(); speak(w.word); return; }
+    }
+  }
+
+  if (isInput) return;
   if (current === 'review' && session && session.queue.length) {
     if ((e.key === ' ' || e.key === 'Enter') && !session.flipped) { e.preventDefault(); flip(); }
     else if (session.flipped && ['1','2','3','4'].includes(e.key)) { e.preventDefault(); grade(+e.key - 1); }
